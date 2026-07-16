@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitecto — Portafolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --cream:#f5f2ed; --ink:#1a1814; --warm:#8b7355; --light-warm:#c9b99a; --nav-h:72px; }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Montserrat',sans-serif; background:var(--cream); color:var(--ink); overflow-x:hidden; }
+
+    nav { position:fixed; top:0; left:0; right:0; height:var(--nav-h); display:flex; align-items:center; justify-content:space-between; padding:0 48px; z-index:100; transition:background .4s,backdrop-filter .4s; }
+    nav.scrolled { background:rgba(245,242,237,0.92); backdrop-filter:blur(12px); border-bottom:1px solid rgba(139,115,85,0.15); }
+    .nav-logo { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:300; letter-spacing:.12em; color:var(--cream); text-decoration:none; transition:color .4s; }
+    nav.scrolled .nav-logo { color:var(--ink); }
+    .nav-links { display:flex; gap:36px; list-style:none; }
+    .nav-links a { font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; text-decoration:none; color:rgba(245,242,237,0.85); transition:color .3s; }
+    nav.scrolled .nav-links a { color:var(--warm); }
+    .nav-links a:hover { color:var(--cream) !important; }
+    nav.scrolled .nav-links a:hover { color:var(--ink) !important; }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
+    .hamburger span { display:block; width:26px; height:1.5px; background:var(--cream); transition:background .4s; }
+    nav.scrolled .hamburger span { background:var(--ink); }
+
+    /* HERO */
+    #hero { position:relative; height:100vh; overflow:hidden; }
+    .slides { position:absolute; inset:0; }
+    .slide { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease; }
+    .slide.active { opacity:1; }
+    .slide-bg { width:100%; height:100%; background-size:cover; background-position:center; transform:scale(1.04); transition:transform 8s ease; }
+    .slide.active .slide-bg { transform:scale(1); }
+    .slide-bg::after { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(245,242,237,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,242,237,0.04) 1px,transparent 1px); background-size:80px 80px; animation:gridPan 30s linear infinite; }
+    @keyframes gridPan{ 0%{background-position:0 0,0 0;} 100%{background-position:80px 160px,160px 80px;} }
+    .slide-caption { position:absolute; bottom:120px; left:48px; color:var(--cream); }
+    .slide-caption .project-name { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,5vw,64px); font-weight:300; letter-spacing:.04em; line-height:1.1; opacity:0; transform:translateY(20px); transition:opacity .9s .4s,transform .9s .4s; }
+    .slide.active .slide-caption .project-name { opacity:1; transform:translateY(0); }
+    .slide-caption .project-type { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--light-warm); margin-top:10px; opacity:0; transition:opacity .9s .7s; }
+    .slide.active .slide-caption .project-type { opacity:1; }
+    #hero::after { content:''; position:absolute; bottom:0; left:0; right:0; height:50%; background:linear-gradient(to top,rgba(26,24,20,0.7),transparent); pointer-events:none; }
+    .hero-controls { position:absolute; bottom:48px; right:48px; display:flex; align-items:center; gap:16px; z-index:10; }
+    .slide-btn { width:44px; height:44px; border:1px solid rgba(245,242,237,0.4); background:transparent; color:var(--cream); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:background .3s,border-color .3s; }
+    .slide-btn:hover { background:rgba(245,242,237,0.12); border-color:var(--cream); }
+    .slide-dots { display:flex; gap:8px; }
+    .dot { width:6px; height:6px; background:rgba(245,242,237,0.4); border-radius:50%; cursor:pointer; transition:background .3s,transform .3s; }
+    .dot.active { background:var(--cream); transform:scale(1.4); }
+    .scroll-hint { position:absolute; bottom:52px; left:48px; display:flex; align-items:center; gap:12px; color:rgba(245,242,237,0.6); font-size:10px; letter-spacing:.2em; text-transform:uppercase; z-index:10; }
+    .scroll-line { width:40px; height:1px; background:rgba(245,242,237,0.4); overflow:hidden; }
+    .scroll-line::after { content:''; display:block; width:100%; height:100%; background:var(--cream); animation:scrollPulse 2s ease infinite; }
+    @keyframes scrollPulse { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+
+    /* SECCIONES */
+    section { padding:120px 48px; }
+    .section-label { font-size:10px; font-weight:500; letter-spacing:.28em; text-transform:uppercase; color:var(--warm); margin-bottom:20px; }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,4vw,52px); font-weight:300; line-height:1.15; color:var(--ink); margin-bottom:48px; }
+
+    /* PROYECTOS */
+    #proyectos {
+      background:
+        radial-gradient(circle at 15% 20%, rgba(139,115,85,.10), transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(201,185,154,.14), transparent 45%),
+        var(--cream);
+      background-size:200% 200%,200% 200%,100% 100%;
+      animation:bgFloatA 28s ease-in-out infinite alternate;
+    }
+    .projects-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:24px; margin-top:48px; }
+    .project-card { position:relative; overflow:hidden; cursor:pointer; }
+    .card-img { overflow:hidden; }
+    .card-bg { width:100%; height:100%; background-size:cover; background-position:center; transition:transform .7s ease; }
+    .project-card:hover .card-bg { transform:scale(1.04); }
+    .card-info { padding:16px 0 8px; }
+    .card-title { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; color:var(--ink); margin-bottom:4px; }
+    .card-meta { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--warm); }
+    .card-overlay { position:absolute; inset:0; background:rgba(26,24,20,0.7); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .4s; }
+    .project-card:hover .card-overlay { opacity:1; }
+    .overlay-text { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--cream); border-bottom:1px solid rgba(245,242,237,0.5); padding-bottom:4px; }
+    /* grid spans dinámicos */
+    .project-card[data-span="7"] { grid-column:span 7; }
+    .project-card[data-span="5"] { grid-column:span 5; }
+    .project-card[data-span="4"] { grid-column:span 4; }
+    .project-card[data-span="6"] { grid-column:span 6; }
+    .project-card[data-span="7"] .card-img,
+    .project-card[data-span="6"] .card-img { aspect-ratio:16/10; }
+    .project-card[data-span="5"] .card-img,
+    .project-card[data-span="4"] .card-img { aspect-ratio:4/3; }
+
+    /* SOBRE */
+    #sobre {
+      background:
+        radial-gradient(circle at 20% 25%, rgba(201,185,154,.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139,115,85,.12), transparent 50%),
+        var(--ink);
+      background-size:220% 220%,220% 220%,100% 100%;
+      color:var(--cream);
+      animation:bgFloatB 34s ease-in-out infinite alternate;
+    }
+    #sobre .section-label { color:var(--light-warm); }
+    #sobre .section-title { color:var(--cream); }
+    .sobre-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+    .sobre-text p { font-size:15px; line-height:1.85; color:rgba(245,242,237,0.75); margin-bottom:20px; }
+    .stats { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:48px; }
+    .stat-num { font-family:'Cormorant Garamond',serif; font-size:52px; font-weight:300; color:var(--cream); line-height:1; }
+    .stat-label { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--light-warm); margin-top:8px; }
+    .sobre-img { position:relative; }
+    .sobre-img-el { width:100%; aspect-ratio:3/4; background-size:cover; background-position:center; }
+    .sobre-img::before { content:''; position:absolute; bottom:-16px; right:-16px; width:calc(100% - 40px); height:calc(100% - 40px); border:1px solid rgba(201,185,154,0.25); pointer-events:none; z-index:-1; }
+
+    /* SERVICIOS */
+    #servicios {
+      background:
+        radial-gradient(circle at 80% 20%, rgba(139,115,85,.10), transparent 45%),
+        radial-gradient(circle at 15% 80%, rgba(201,185,154,.12), transparent 45%),
+        #f0ebe3;
+      background-size:200% 200%,200% 200%,100% 100%;
+      animation:bgFloatA 24s ease-in-out infinite alternate;
+    }
+    .servicios-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-top:48px; background:rgba(139,115,85,0.15); }
+    .servicio-item { background:#f0ebe3; padding:48px 36px; transition:background .3s; }
+    .servicio-item:hover { background:var(--ink); }
+    .servicio-item:hover .servicio-num,.servicio-item:hover .servicio-title,.servicio-item:hover .servicio-desc { color:var(--cream); }
+    .servicio-num { font-family:'Cormorant Garamond',serif; font-size:13px; color:var(--warm); letter-spacing:.1em; margin-bottom:24px; transition:color .3s; }
+    .servicio-title { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:400; color:var(--ink); margin-bottom:16px; line-height:1.2; transition:color .3s; }
+    .servicio-desc { font-size:13px; line-height:1.75; color:rgba(26,24,20,0.65); transition:color .3s; }
+
+    /* CONTACTO */
+    #contacto {
+      background:
+        radial-gradient(circle at 30% 70%, rgba(139,115,85,.10), transparent 50%),
+        radial-gradient(circle at 75% 25%, rgba(201,185,154,.14), transparent 50%),
+        var(--cream);
+      background-size:210% 210%,210% 210%,100% 100%;
+      animation:bgFloatB 30s ease-in-out infinite alternate;
+      text-align:center; padding:140px 48px;
+    }
+    #contacto .section-label { display:inline-block; }
+    #contacto .section-title { max-width:600px; margin:0 auto 48px; }
+    .contact-links { display:flex; justify-content:center; gap:48px; flex-wrap:wrap; }
+    .contact-link { display:flex; flex-direction:column; align-items:center; gap:10px; text-decoration:none; color:var(--ink); }
+    .contact-link-label { font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--warm); }
+    .contact-link-value { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; border-bottom:1px solid transparent; transition:border-color .3s; }
+    .contact-link:hover .contact-link-value { border-color:var(--warm); }
+    .cta-btn { display:inline-block; margin-top:60px; padding:16px 48px; border:1px solid var(--ink); font-size:11px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; text-decoration:none; color:var(--ink); transition:background .35s,color .35s; }
+    .cta-btn:hover { background:var(--ink); color:var(--cream); }
+
+    footer { background:var(--ink); padding:32px 48px; display:flex; justify-content:space-between; align-items:center; }
+    footer p { font-size:11px; letter-spacing:.14em; color:rgba(245,242,237,0.4); }
+    .footer-logo { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:300; letter-spacing:.12em; color:rgba(245,242,237,0.6); }
+
+    .mobile-menu { display:none; position:fixed; inset:0; background:var(--ink); z-index:200; flex-direction:column; align-items:center; justify-content:center; gap:36px; }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu a { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--cream); text-decoration:none; letter-spacing:.06em; }
+    .mobile-close { position:absolute; top:28px; right:36px; font-size:28px; color:var(--cream); cursor:pointer; background:none; border:none; }
+
+    /* Botón admin flotante */
+    .admin-fab { position:fixed; bottom:28px; right:28px; width:48px; height:48px; background:var(--ink); color:var(--cream); border:none; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:500; box-shadow:0 4px 20px rgba(0,0,0,0.3); transition:transform .2s; text-decoration:none; }
+    .admin-fab:hover { transform:scale(1.1); }
+
+    .empty-hint{ padding:40px; text-align:center; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--warm); grid-column:1/-1; }
+    section[data-hidden="true"], nav li[data-hidden="true"], .mobile-menu a[data-hidden="true"]{ display:none !important; }
+
+    /* Fondos vivos: gradientes que derivan lentamente dentro de cada sección */
+    @keyframes bgFloatA{ 0%{background-position:0% 0%,100% 100%,0 0;} 100%{background-position:100% 60%,0% 30%,0 0;} }
+    @keyframes bgFloatB{ 0%{background-position:0% 100%,100% 0%,0 0;} 100%{background-position:60% 20%,30% 100%,0 0;} }
+
+    /* ── EFECTOS Y ANIMACIONES ── */
+
+    /* Precarga / cortina de entrada */
+    .preloader{position:fixed;inset:0;background:var(--ink);z-index:3000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;transition:transform 1s cubic-bezier(.76,0,.24,1),opacity .6s ease .35s;}
+    .preloader.done{transform:translateY(-100%);opacity:0;pointer-events:none;}
+    .preloader-logo{font-family:'Cormorant Garamond',serif;color:var(--cream);font-size:26px;letter-spacing:.3em;text-transform:uppercase;opacity:0;animation:preloaderIn 1s ease forwards .1s;}
+    .preloader-line{width:0;height:1px;background:var(--light-warm);animation:preloaderLine 1.1s ease forwards .3s;}
+    @keyframes preloaderIn{ to{opacity:1;} }
+    @keyframes preloaderLine{ to{width:120px;} }
+
+    /* Barra de progreso de scroll */
+    .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0%;background:var(--cream);z-index:1001;mix-blend-mode:difference;transition:width .08s linear;}
+
+    /* (cursor personalizado quitado por dar problemas) */
+
+    /* ── MODO EDICIÓN EN VIVO ──
+       Solo se activa cuando esta página se carga embebida dentro del panel
+       admin (vista previa). En el sitio público real, estas reglas no aplican
+       nunca porque la clase admin-preview-mode nunca se agrega. */
+    body.admin-preview-mode [data-edit-type]{ cursor:pointer; position:relative; outline:2px dashed transparent; outline-offset:-2px; transition:outline-color .15s, background-color .15s; }
+    body.admin-preview-mode [data-edit-type]:hover{ outline-color:#c9a876; z-index:5; }
+    body.admin-preview-mode [data-edit-type]:hover::after{
+      content:'✎ Editar'; position:absolute; top:8px; right:8px; z-index:20;
+      background:#1a1a1a; color:#f5f2ed; font-size:10px; letter-spacing:.08em;
+      text-transform:uppercase; padding:5px 10px; border-radius:3px; pointer-events:none;
+    }
+    body.admin-preview-mode .sobre-text:hover::after{ top:0; right:0; }
+
+    /* Reveal al hacer scroll, con stagger opcional vía --rd */
+    .reveal{ opacity:0; transform:translateY(46px); transition:opacity .9s cubic-bezier(.16,.84,.44,1) var(--rd,0ms), transform .9s cubic-bezier(.16,.84,.44,1) var(--rd,0ms); }
+    .reveal.in{ opacity:1; transform:translateY(0); }
+    .reveal-scale{ opacity:0; transform:scale(.92); transition:opacity .8s ease var(--rd,0ms), transform .8s cubic-bezier(.16,.84,.44,1) var(--rd,0ms); }
+    .reveal-scale.in{ opacity:1; transform:scale(1); }
+
+    /* Nav underline animado */
+    .nav-links a{ position:relative; }
+    .nav-links a::after{ content:''; position:absolute; left:0; bottom:-7px; width:0; height:1px; background:currentColor; transition:width .4s cubic-bezier(.16,.84,.44,1); }
+    .nav-links a:hover::after{ width:100%; }
+
+    /* Botones con más carácter */
+    .slide-btn{ overflow:hidden; }
+    .slide-btn:hover{ transform:scale(1.06); }
+    .slide-btn:active{ transform:scale(.94); }
+    .cta-btn{ position:relative; overflow:hidden; letter-spacing:.22em; transition:background .35s,color .35s,letter-spacing .35s,transform .2s; }
+    .cta-btn:hover{ letter-spacing:.3em; }
+    .cta-btn:active{ transform:scale(.97); }
+
+    /* Overlay de proyecto con texto que sigue el cursor */
+    .card-overlay{ transition:opacity .5s cubic-bezier(.16,.84,.44,1); }
+    .overlay-text{ transition:transform .25s cubic-bezier(.16,.84,.44,1); will-change:transform; }
+    .project-card{ transition:transform .5s cubic-bezier(.16,.84,.44,1); }
+    .project-card:hover{ transform:translateY(-6px); }
+
+    /* Parallax del hero */
+    .slides{ will-change:transform; }
+
+    /* Stats con línea que crece */
+    .stat-item{ position:relative; padding-top:18px; }
+    .stat-item::before{ content:''; position:absolute; top:0; left:0; width:0; height:1px; background:var(--light-warm); transition:width 1s cubic-bezier(.16,.84,.44,1) .2s; }
+    .stat-item.in::before{ width:36px; }
+
+    /* Servicios: subrayado que crece en el número */
+    .servicio-item{ position:relative; }
+    .servicio-item::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:2px; background:var(--warm); transition:width .5s ease; }
+    .servicio-item:hover::after{ width:100%; }
+
+    /* Dots del slideshow con transición más suave */
+    .dot{ transition:background .35s,transform .35s cubic-bezier(.34,1.56,.64,1); }
+
+    @media(prefers-reduced-motion:reduce){
+      #proyectos,#sobre,#servicios,#contacto,.slide-bg::after{ animation:none !important; }
+      .reveal,.reveal-scale{ transition:opacity .4s ease !important; transform:none !important; }
+    }
+
+    /* ── BLOQUES PERSONALIZADOS (armados desde el admin) ── */
+    .bloques-anchor{ display:none; }
+    .bloques-anchor.has-content{ display:block; background:var(--cream); }
+    .bloque-custom{ max-width:1100px; margin:0 auto; padding:70px 48px; }
+    .bloque-titulo{ font-family:'Cormorant Garamond',serif; font-size:clamp(24px,3vw,32px); font-weight:500; margin-bottom:20px; }
+    .bloque-parrafo{ font-size:16px; line-height:1.9; color:#4a4a44; max-width:720px; white-space:pre-line; }
+    .bloque-imagen-el{ width:100%; aspect-ratio:16/9; background-size:cover; background-position:center; }
+    .bloque-pie{ margin-top:14px; font-size:12.5px; letter-spacing:.04em; color:var(--warm); font-style:italic; }
+    .bloque-galeria-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:28px; }
+    .bloque-galeria-item{ margin:0; }
+    .bloque-galeria-img{ width:100%; aspect-ratio:4/3; background-size:cover; background-position:center; }
+    .bloque-galeria-item figcaption{ margin-top:10px; font-size:12px; color:var(--warm); font-style:italic; }
+
+    @media(max-width:900px){ .bloque-custom{ padding:48px 24px; } }
+
+    @media(max-width:900px){
+      nav{padding:0 24px;} .nav-links{display:none;} .hamburger{display:flex;}
+      section{padding:80px 24px;}
+      .projects-grid{grid-template-columns:1fr 1fr; gap:16px;}
+      .project-card[data-span]{grid-column:span 2;}
+      .project-card:nth-child(2),.project-card:nth-child(3),.project-card:nth-child(4){grid-column:span 1;}
+      .sobre-grid{grid-template-columns:1fr; gap:40px;} .sobre-img{order:-1;}
+      .servicios-grid{grid-template-columns:1fr;}
+      .slide-caption{left:24px; bottom:100px;} .hero-controls{right:24px;} .scroll-hint{display:none;}
+      footer{flex-direction:column; gap:12px; text-align:center;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="preloader" id="preloader">
+  <div class="preloader-logo" id="preloaderLogo">Portafolio</div>
+  <div class="preloader-line"></div>
+</div>
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<nav id="nav">
+  <a href="#" class="nav-logo" id="navLogo">Cargando…</a>
+  <ul class="nav-links">
+    <li data-navfor="proyectos"><a href="#proyectos">Proyectos</a></li>
+    <li data-navfor="sobre"><a href="#sobre">Sobre mí</a></li>
+    <li data-navfor="servicios"><a href="#servicios">Servicios</a></li>
+    <li data-navfor="contacto"><a href="#contacto">Contacto</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="#proyectos" data-navfor="proyectos" onclick="closeMobileMenu()">Proyectos</a>
+  <a href="#sobre" data-navfor="sobre" onclick="closeMobileMenu()">Sobre mí</a>
+  <a href="#servicios" data-navfor="servicios" onclick="closeMobileMenu()">Servicios</a>
+  <a href="#contacto" data-navfor="contacto" onclick="closeMobileMenu()">Contacto</a>
+</div>
+
+<section id="hero">
+  <div class="slides" id="slidesContainer"></div>
+  <div class="scroll-hint"><div class="scroll-line"></div>Desplazar</div>
+  <div class="hero-controls">
+    <button class="slide-btn" id="prevBtn">&#8592;</button>
+    <div class="slide-dots" id="dots"></div>
+    <button class="slide-btn" id="nextBtn">&#8594;</button>
+  </div>
+</section>
+
+<div class="bloques-anchor" id="bloques-inicio"></div>
+
+<section id="proyectos">
+  <div class="section-label reveal">— Portafolio</div>
+  <div class="section-title reveal" style="--rd:120ms">Proyectos<br><em>seleccionados</em></div>
+  <div class="projects-grid" id="projectsGrid"></div>
+</section>
+
+<div class="bloques-anchor" id="bloques-proyectos_sobre"></div>
+
+<section id="sobre">
+  <div class="sobre-grid">
+    <div class="sobre-text">
+      <div class="section-label reveal">— Sobre mí</div>
+      <div class="section-title reveal" style="--rd:120ms" id="sobreTitulo">Diseño con propósito,<br><em>construido para durar</em></div>
+      <p id="sobreP1" class="reveal" style="--rd:220ms"></p>
+      <p id="sobreP2" class="reveal" style="--rd:280ms"></p>
+      <p id="sobreP3" class="reveal" style="--rd:340ms"></p>
+      <div class="stats" id="statsGrid"></div>
+    </div>
+    <div class="sobre-img reveal-scale">
+      <div class="sobre-img-el" id="sobreFoto"></div>
+    </div>
+  </div>
+</section>
+
+<div class="bloques-anchor" id="bloques-sobre_servicios"></div>
+
+<section id="servicios">
+  <div class="section-label reveal">— Lo que hago</div>
+  <div class="section-title reveal" style="--rd:120ms">Servicios</div>
+  <div class="servicios-grid" id="serviciosGrid"></div>
+</section>
+
+<div class="bloques-anchor" id="bloques-servicios_contacto"></div>
+
+<section id="contacto" data-edit-type="contacto">
+  <div class="section-label reveal">— Trabajemos juntos</div>
+  <div class="section-title reveal" style="--rd:120ms">¿Tenés un<br><em>proyecto en mente?</em></div>
+  <div class="contact-links reveal" id="contactLinks" style="--rd:220ms"></div>
+  <a href="#" class="cta-btn reveal" id="ctaBtn" style="--rd:320ms">Iniciar conversación</a>
+</section>
+
+<div class="bloques-anchor" id="bloques-final"></div>
+
+<footer>
+  <span class="footer-logo" id="footerLogo"></span>
+  <p>© <span id="footerYear"></span> Todos los derechos reservados</p>
+</footer>
+
+<a href="admin.html" class="admin-fab" title="Panel Admin">⚙</a>
+
+<script>
+// storage.js — motor de almacenamiento compartido entre admin.html y portfolio_arquitectura.html
+//
+// Por qué existe este archivo: localStorage tiene un límite real de entre 5 y 10MB
+// por sitio. Un portafolio con varias fotos (aunque estén comprimidas) puede superarlo
+// fácil, y cuando eso pasa, guardar falla — a veces en silencio. IndexedDB no tiene ese
+// techo tan bajo (los navegadores suelen permitir cientos de MB o más), así que acá
+// guardamos ahí. Si por algún motivo IndexedDB no está disponible, se cae de nuevo a
+// localStorage con manejo de errores explícito.
+
+const PORTFOLIO_DB_NAME = 'portfolio_db';
+const PORTFOLIO_DB_STORE = 'kv';
+const PORTFOLIO_DATA_KEY = 'portfolio_data';
+const PORTFOLIO_PING_KEY = 'portfolio_data_ping'; // solo para avisar a otras pestañas que hubo un cambio
+
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error('IndexedDB no disponible en este navegador')); return; }
+    const req = indexedDB.open(PORTFOLIO_DB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(PORTFOLIO_DB_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet(key) {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(PORTFOLIO_DB_STORE, 'readonly');
+    const req = tx.objectStore(PORTFOLIO_DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }));
+}
+
+function idbSet(key, value) {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(PORTFOLIO_DB_STORE, 'readwrite');
+    tx.objectStore(PORTFOLIO_DB_STORE).put(value, key);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+
+// Carga los datos guardados. Devuelve el objeto de datos, o null si nunca se guardó nada.
+async function loadPortfolioData() {
+  try {
+    const fromIdb = await idbGet(PORTFOLIO_DATA_KEY);
+    if (fromIdb) return fromIdb;
+  } catch (e) {
+    console.warn('IndexedDB no disponible, se intentará localStorage', e);
+  }
+
+  // Migración automática: versiones anteriores de este panel guardaban todo
+  // directamente en localStorage. Si hay datos ahí, los pasamos a IndexedDB
+  // y liberamos ese espacio.
+  const legacy = localStorage.getItem(PORTFOLIO_DATA_KEY);
+  if (legacy) {
+    try {
+      const parsed = JSON.parse(legacy);
+      try { await idbSet(PORTFOLIO_DATA_KEY, parsed); localStorage.removeItem(PORTFOLIO_DATA_KEY); }
+      catch (e) { /* si tampoco se puede migrar, al menos devolvemos los datos igual */ }
+      return parsed;
+    } catch (e) { console.error('No se pudo leer el respaldo anterior en localStorage', e); }
+  }
+  return null;
+}
+
+// Guarda los datos. Devuelve { ok: true } o { ok: false, error }.
+async function savePortfolioData(data) {
+  try {
+    await idbSet(PORTFOLIO_DATA_KEY, data);
+    try { localStorage.setItem(PORTFOLIO_PING_KEY, String(Date.now())); } catch (e) { /* no crítico */ }
+    return { ok: true, via: 'indexeddb' };
+  } catch (e) {
+    console.warn('Fallo al guardar en IndexedDB, se intenta localStorage como respaldo', e);
+    try {
+      localStorage.setItem(PORTFOLIO_DATA_KEY, JSON.stringify(data));
+      return { ok: true, via: 'localstorage' };
+    } catch (err) {
+      return { ok: false, error: err };
+    }
+  }
+}
+
+// Tamaño aproximado (en bytes) de los datos actuales, para mostrar un indicador informativo.
+function estimateDataSize(data) {
+  try { return new Blob([JSON.stringify(data)]).size; } catch (e) { return JSON.stringify(data).length; }
+}
+
+// Avisa cuando otra pestaña (admin <-> portafolio, o dos pestañas del admin) guardó cambios.
+function onPortfolioDataChanged(callback) {
+  window.addEventListener('storage', (e) => {
+    if (e.key === PORTFOLIO_PING_KEY || e.key === PORTFOLIO_DATA_KEY) callback();
+  });
+}
+
+</script>
+<script>
+const SPANS = [7,5,4,4,4,6,6];
+
+// Copia de seguridad embebida: así el sitio siempre muestra algo,
+// incluso abierto con doble clic (file://) sin servidor y sin haber
+// pasado antes por el admin.
+const DEFAULT_DATA = {
+  perfil:{nombre:"Adriana Ferro",titulo:"Arquitectura",descripcion1:"Estudio la arquitectura como un ejercicio de equilibrio entre el paisaje, la luz y la vida de quienes habitan cada espacio.",descripcion2:"En más de una década de trabajo, cada proyecto partió de escuchar primero: el terreno, el clima, y las costumbres de quien lo va a vivir.",descripcion3:"Hoy dirijo un estudio pequeño que prefiere pocos proyectos bien pensados antes que muchos apurados.",foto:"",
+    stats:[{numero:"47",label:"Proyectos completados"},{numero:"15",label:"Años de experiencia"},{numero:"8",label:"Premios de diseño"},{numero:"3",label:"Países"}]},
+  contacto:{email:"hola@tunombre.com",telefono:"+54 9 11 0000-0000",ubicacion:"Buenos Aires, Argentina"},
+  secciones:{hero:true,proyectos:true,sobre:true,servicios:true,contacto:true},
+  bloques:[],
+  slides:[
+    {id:1,nombre:"Casa Umbra",tipo:"Vivienda Unifamiliar · 2024",imagen:"",gradiente:"linear-gradient(135deg,#2c2820,#6b5a47)"},
+    {id:2,nombre:"Torre Argenta",tipo:"Edificio Corporativo · 2023",imagen:"",gradiente:"linear-gradient(160deg,#1e2428,#3d5060)"},
+    {id:3,nombre:"Pabellón Cristal",tipo:"Arquitectura Efímera · 2023",imagen:"",gradiente:"linear-gradient(120deg,#2a2118,#554330)"},
+    {id:4,nombre:"Conjunto Los Robles",tipo:"Urbanismo · 2022",imagen:"",gradiente:"linear-gradient(145deg,#1a1f1c,#3d5045)"}
+  ],
+  proyectos:[
+    {id:1,titulo:"Casa Umbra",categoria:"Residencial",anio:"2024",imagen:"",gradiente:"linear-gradient(135deg,#3d3528,#5c4f3d)"},
+    {id:2,titulo:"Torre Argenta",categoria:"Corporativo",anio:"2023",imagen:"",gradiente:"linear-gradient(135deg,#1e2d38,#2d4455)"},
+    {id:3,titulo:"Pabellón Cristal",categoria:"Cultural",anio:"2023",imagen:"",gradiente:"linear-gradient(135deg,#2a3320,#3d4d2e)"},
+    {id:4,titulo:"Residencia Altamar",categoria:"Residencial",anio:"2022",imagen:"",gradiente:"linear-gradient(135deg,#38281e,#553d2d)"},
+    {id:5,titulo:"Centro Médico Aurora",categoria:"Salud",anio:"2022",imagen:"",gradiente:"linear-gradient(135deg,#28283a,#3d3d5c)"},
+    {id:6,titulo:"Conjunto Los Robles",categoria:"Urbanismo",anio:"2021",imagen:"",gradiente:"linear-gradient(135deg,#2a2020,#4a3030)"},
+    {id:7,titulo:"Hotel Meridian",categoria:"Hospitalidad",anio:"2021",imagen:"",gradiente:"linear-gradient(135deg,#203028,#2e4538)"}
+  ],
+  servicios:[
+    {id:1,titulo:"Diseño Arquitectónico",descripcion:"Desarrollo integral de proyectos desde el anteproyecto hasta la documentación ejecutiva."},
+    {id:2,titulo:"Dirección de Obra",descripcion:"Seguimiento y control técnico durante la construcción, garantizando calidad y plazos."},
+    {id:3,titulo:"Interiorismo",descripcion:"Diseño de interiores con selección de materialidades y mobiliario integrado."},
+    {id:4,titulo:"Consultoría Urbana",descripcion:"Análisis y planificación de desarrollos urbanos y mixtos."},
+    {id:5,titulo:"Renders & Visualización",descripcion:"Representación fotorrealista y recorridos virtuales de proyectos."},
+    {id:6,titulo:"Arquitectura Sostenible",descripcion:"Diseño bioclimático, certificaciones LEED y EDGE, eficiencia energética."}
+  ]
+};
+
+function mergeDefaults(d){
+  // Rellena campos que puedan faltar si viene de un data.json/localStorage viejo
+  d.secciones = Object.assign({hero:true,proyectos:true,sobre:true,servicios:true,contacto:true}, d.secciones||{});
+  d.slides = d.slides||[]; d.proyectos = d.proyectos||[]; d.servicios = d.servicios||[];
+  d.perfil = d.perfil||{}; d.perfil.stats = d.perfil.stats||[];
+  d.contacto = d.contacto||{};
+  d.bloques = d.bloques||[];
+  return d;
+}
+
+function getData() {
+  // uso interno síncrono ya no aplica (IndexedDB es async); se mantiene por compatibilidad
+  return null;
+}
+
+async function loadData() {
+  // 1) Si este archivo tiene datos incrustados (por ejemplo, porque se descargó
+  //    ya armado desde el panel admin), esos mandan siempre — así funciona como
+  //    un archivo único, sin depender de data.json ni de este navegador en particular.
+  const embedded = document.getElementById('embedded-portfolio-data');
+  if (embedded && embedded.textContent.trim()) {
+    try {
+      render(mergeDefaults(JSON.parse(embedded.textContent)));
+      return;
+    } catch(e) { console.error('No se pudo leer los datos incrustados', e); }
+  }
+
+  // 2) Si no hay datos incrustados, se comporta como antes: IndexedDB de este
+  //    navegador, luego data.json (si el sitio está servido por http/https), y
+  //    si nada de eso existe, el contenido de ejemplo interno.
+  let data = await loadPortfolioData();
+  if (!data) {
+    try {
+      const r = await fetch('data.json');
+      if (!r.ok) throw new Error('sin data.json');
+      data = mergeDefaults(await r.json());
+    } catch(e) {
+      data = mergeDefaults(JSON.parse(JSON.stringify(DEFAULT_DATA)));
+    }
+  } else {
+    data = mergeDefaults(data);
+  }
+  render(data);
+}
+
+let currentGoTo = null;
+
+function render(d) {
+  const sec = d.secciones || {};
+
+  // Nav / footer
+  document.getElementById('navLogo').textContent = d.perfil.nombre || 'Portafolio';
+  document.getElementById('footerLogo').textContent = `${d.perfil.nombre||''} — ${d.perfil.titulo||''}`;
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+  document.title = `${d.perfil.nombre||'Portafolio'} — Portafolio`;
+
+  // Mostrar / ocultar secciones según lo configurado en el admin
+  ['hero','proyectos','sobre','servicios','contacto'].forEach(key=>{
+    const visible = sec[key] !== false;
+    const section = document.getElementById(key);
+    if (section) section.toggleAttribute('data-hidden', !visible);
+    document.querySelectorAll(`[data-navfor="${key}"]`).forEach(el=>el.toggleAttribute('data-hidden', !visible));
+  });
+
+  // Slides
+  const sc = document.getElementById('slidesContainer');
+  const dotsEl = document.getElementById('dots');
+  const controls = document.querySelector('.hero-controls');
+  const scrollHint = document.querySelector('.scroll-hint');
+  sc.innerHTML = ''; dotsEl.innerHTML = '';
+  if (d.slides.length === 0) {
+    sc.innerHTML = '<div class="slide active"><div class="slide-bg" style="background:linear-gradient(135deg,#2c2820,#6b5a47)"></div><div class="slide-caption"><div class="project-name">Agregá tu primer slide</div><div class="project-type">Desde el panel admin</div></div></div>';
+    if (controls) controls.style.display = 'none';
+    if (scrollHint) scrollHint.style.display = 'none';
+  } else {
+    if (controls) controls.style.display = '';
+    if (scrollHint) scrollHint.style.display = '';
+    d.slides.forEach((s, i) => {
+      const bgStyle = s.imagen
+        ? `background-image:url('${s.imagen}');background-size:cover;background-position:center`
+        : `background:${s.gradiente}`;
+      sc.innerHTML += `
+        <div class="slide ${i===0?'active':''}" data-edit-type="slide" data-edit-idx="${i}">
+          <div class="slide-bg" style="${bgStyle}"></div>
+          <div class="slide-caption">
+            <div class="project-name">${s.nombre}</div>
+            <div class="project-type">${s.tipo}</div>
+          </div>
+        </div>`;
+      dotsEl.innerHTML += `<div class="dot ${i===0?'active':''}"></div>`;
+    });
+  }
+  initSlideshow();
+
+  // Proyectos
+  const pg = document.getElementById('projectsGrid');
+  pg.innerHTML = '';
+  if (d.proyectos.length === 0) {
+    pg.innerHTML = '<div class="empty-hint">Todavía no agregaste proyectos. Sumalos desde el panel admin.</div>';
+  } else {
+    d.proyectos.forEach((p, i) => {
+      const span = SPANS[i] || 4;
+      const bgStyle = p.imagen
+        ? `background-image:url('${p.imagen}');background-size:cover;background-position:center`
+        : `background:${p.gradiente}`;
+      pg.innerHTML += `
+        <div class="project-card reveal" style="--rd:${(i%6)*70}ms" data-span="${span}" data-edit-type="proyecto" data-edit-idx="${i}">
+          <div class="card-img">
+            <div class="card-bg" style="${bgStyle}"></div>
+          </div>
+          <div class="card-overlay"><span class="overlay-text">Ver proyecto</span></div>
+          <div class="card-info">
+            <div class="card-title">${p.titulo}</div>
+            <div class="card-meta">${p.categoria} · ${p.anio}</div>
+          </div>
+        </div>`;
+    });
+  }
+
+  // Sobre
+  const sobreTextEl = document.querySelector('.sobre-text');
+  if (sobreTextEl) { sobreTextEl.setAttribute('data-edit-type','perfil'); }
+  document.getElementById('sobreP1').textContent = d.perfil.descripcion1 || '';
+  document.getElementById('sobreP2').textContent = d.perfil.descripcion2 || '';
+  document.getElementById('sobreP3').textContent = d.perfil.descripcion3 || '';
+  const sg = document.getElementById('statsGrid');
+  sg.innerHTML = d.perfil.stats.map((s,i) => `
+    <div class="stat-item reveal" style="--rd:${i*90}ms">
+      <div class="stat-num" data-full="${s.numero}">0</div>
+      <div class="stat-label">${s.label}</div>
+    </div>`).join('');
+  const foto = document.getElementById('sobreFoto');
+  foto.setAttribute('data-edit-type','perfil');
+  foto.style.background = d.perfil.foto
+    ? `url('${d.perfil.foto}') center/cover`
+    : 'linear-gradient(160deg,#2d2820,#4a3f33)';
+
+  // Servicios
+  const srvg = document.getElementById('serviciosGrid');
+  if (d.servicios.length === 0) {
+    srvg.innerHTML = '<div class="empty-hint">Todavía no agregaste servicios.</div>';
+  } else {
+    srvg.innerHTML = d.servicios.map((s,i) => `
+      <div class="servicio-item reveal" style="--rd:${(i%3)*90}ms" data-edit-type="servicio" data-edit-idx="${i}">
+        <div class="servicio-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="servicio-title">${s.titulo}</div>
+        <div class="servicio-desc">${s.descripcion}</div>
+      </div>`).join('');
+  }
+
+  // Contacto
+  const cl = document.getElementById('contactLinks');
+  const tel = (d.contacto.telefono||'').replace(/\s/g,'');
+  cl.innerHTML = `
+    ${d.contacto.email ? `<a href="mailto:${d.contacto.email}" class="contact-link">
+      <span class="contact-link-label">Email</span>
+      <span class="contact-link-value">${d.contacto.email}</span>
+    </a>` : ''}
+    ${tel ? `<a href="tel:${tel}" class="contact-link">
+      <span class="contact-link-label">Teléfono</span>
+      <span class="contact-link-value">${d.contacto.telefono}</span>
+    </a>` : ''}
+    ${d.contacto.ubicacion ? `<span class="contact-link">
+      <span class="contact-link-label">Estudio</span>
+      <span class="contact-link-value">${d.contacto.ubicacion}</span>
+    </span>` : ''}`;
+  document.getElementById('ctaBtn').href = d.contacto.email ? `mailto:${d.contacto.email}` : '#contacto';
+
+  // Reveal al hacer scroll (con stagger) + contador animado en las estadísticas
+  renderBloques(d);
+  initRevealObserver();
+  initMagneticOverlays();
+}
+
+// ── BLOQUES PERSONALIZADOS (armados libremente desde el admin) ──
+function renderBloques(d){
+  const posiciones = ['inicio','proyectos_sobre','sobre_servicios','servicios_contacto','final'];
+  posiciones.forEach(pos=>{
+    const container = document.getElementById('bloques-'+pos);
+    if (!container) return;
+    const bloques = (d.bloques||[]).filter(b => (b.posicion||'inicio') === pos);
+    if (bloques.length === 0){ container.innerHTML = ''; container.classList.remove('has-content'); return; }
+    container.classList.add('has-content');
+    container.innerHTML = bloques.map((b,i) => renderBloqueHTML(b,i)).join('');
+  });
+}
+
+function renderBloqueHTML(b, i){
+  const rd = `style="--rd:${(i%4)*90}ms"`;
+  if (b.tipo === 'texto'){
+    return `<div class="bloque-custom bloque-texto reveal" ${rd}>
+      ${b.titulo ? `<div class="bloque-titulo">${b.titulo}</div>` : ''}
+      <p class="bloque-parrafo">${(b.texto||'')}</p>
+    </div>`;
+  }
+  if (b.tipo === 'imagen'){
+    const bg = b.imagen ? `background-image:url('${b.imagen}')` : `background:linear-gradient(135deg,#3d3528,#5c4f3d)`;
+    return `<div class="bloque-custom bloque-imagen reveal" ${rd}>
+      ${b.titulo ? `<div class="bloque-titulo">${b.titulo}</div>` : ''}
+      <div class="bloque-imagen-el" style="${bg}"></div>
+      ${b.pie ? `<div class="bloque-pie">${b.pie}</div>` : ''}
+    </div>`;
+  }
+  if (b.tipo === 'galeria'){
+    const items = (b.items||[]).map(it => {
+      const bg = it.imagen ? `background-image:url('${it.imagen}')` : `background:linear-gradient(135deg,#3d3528,#5c4f3d)`;
+      return `<figure class="bloque-galeria-item">
+        <div class="bloque-galeria-img" style="${bg}"></div>
+        ${it.pie ? `<figcaption>${it.pie}</figcaption>` : ''}
+      </figure>`;
+    }).join('');
+    return `<div class="bloque-custom bloque-galeria reveal" ${rd}>
+      ${b.titulo ? `<div class="bloque-titulo">${b.titulo}</div>` : ''}
+      <div class="bloque-galeria-grid">${items || '<p style="font-size:13px;color:#999;">(Galería sin imágenes todavía)</p>'}</div>
+    </div>`;
+  }
+  return '';
+}
+
+let revealObserver = null;
+function initRevealObserver(){
+  if (!revealObserver){
+    revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in');
+        if (e.target.classList.contains('stat-item')) animateCounter(e.target.querySelector('.stat-num'));
+        revealObserver.unobserve(e.target);
+      });
+    }, { threshold: 0.15 });
+  }
+  document.querySelectorAll('.reveal:not(.in), .reveal-scale:not(.in)').forEach(el => revealObserver.observe(el));
+}
+
+// Anima un número tipo "47", "15+", "3 países" contando desde 0 hasta el valor real
+function animateCounter(el){
+  if (!el || el.dataset.counted) return;
+  el.dataset.counted = '1';
+  const full = el.dataset.full || el.textContent;
+  const match = full.match(/\d+/);
+  if (!match) { el.textContent = full; return; }
+  const target = parseInt(match[0], 10);
+  const prefix = full.slice(0, match.index);
+  const suffix = full.slice(match.index + match[0].length);
+  const duration = 1400;
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = prefix + Math.round(target * eased) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// El texto "Ver proyecto" sigue levemente al cursor dentro de cada card
+function initMagneticOverlays(){
+  document.querySelectorAll('.project-card').forEach(card => {
+    if (card.dataset.magnetBound) return;
+    card.dataset.magnetBound = '1';
+    const label = card.querySelector('.overlay-text');
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left - r.width/2) * 0.15;
+      const y = (e.clientY - r.top - r.height/2) * 0.15;
+      label.style.transform = `translate(${x}px,${y}px)`;
+    });
+    card.addEventListener('mouseleave', () => { label.style.transform = 'translate(0,0)'; });
+  });
+}
+
+function initSlideshow() {
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.dot');
+  let current = 0, autoTimer;
+  if (slides.length === 0) return;
+  function goTo(n) {
+    slides[current].classList.remove('active'); if(dots[current]) dots[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active'); if(dots[current]) dots[current].classList.add('active');
+  }
+  function startAuto() { clearInterval(autoTimer); if (slides.length > 1) autoTimer = setInterval(() => goTo(current+1), 5000); }
+  document.getElementById('nextBtn').onclick = () => { goTo(current+1); startAuto(); };
+  document.getElementById('prevBtn').onclick = () => { goTo(current-1); startAuto(); };
+  dots.forEach((d,i) => d.onclick = () => { goTo(i); startAuto(); });
+  startAuto();
+}
+
+// Nav + barra de progreso + parallax del hero, todo en un único listener de scroll
+const nav = document.getElementById('nav');
+const scrollProgressEl = document.getElementById('scrollProgress');
+const slidesEl = document.getElementById('slidesContainer');
+function onScroll(){
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  scrollProgressEl.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+  if (slidesEl) {
+    const progress = Math.min(1, window.scrollY / window.innerHeight);
+    slidesEl.style.transform = `scale(${1 + progress * 0.15})`;
+  }
+}
+window.addEventListener('scroll', onScroll, { passive:true });
+onScroll();
+
+document.getElementById('hamburger').onclick = () => document.getElementById('mobileMenu').classList.add('open');
+document.getElementById('mobileClose').onclick = closeMobileMenu;
+function closeMobileMenu() { document.getElementById('mobileMenu').classList.remove('open'); }
+
+
+// Sincronización en vivo: si el admin está abierto en otra pestaña del
+// mismo navegador y guarda cambios, esta página se actualiza sola.
+onPortfolioDataChanged(async () => {
+  const data = await loadPortfolioData();
+  if (data) render(mergeDefaults(data));
+});
+
+loadData().then(() => {
+  // Cortina de entrada: se retira una vez que el contenido real ya está pintado
+  setTimeout(() => document.getElementById('preloader').classList.add('done'), 350);
+}).catch(() => {
+  document.getElementById('preloader').classList.add('done');
+});
+// Seguro: si algo falla y la cortina no se retira sola, se fuerza a los 4s
+setTimeout(() => document.getElementById('preloader').classList.add('done'), 4000);
+
+// ── MODO EDICIÓN EN VIVO ──
+// Esta página es siempre el sitio público real. Pero cuando el panel admin la
+// carga adentro de un iframe para la "Vista previa en vivo", le agrega la bandera
+// window.__ADMIN_PREVIEW__ antes de este script. En ese caso (y solo en ese
+// caso) los elementos marcados con data-edit-type se vuelven clickeables y
+// avisan al panel padre qué se quiere editar, en vez de comportarse como un
+// link normal. En el sitio publicado de verdad esto nunca se activa.
+if (window.__ADMIN_PREVIEW__) {
+  document.body.classList.add('admin-preview-mode');
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-edit-type]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    window.parent.postMessage({
+      source: 'portfolio-preview',
+      type: el.dataset.editType,
+      idx: el.dataset.editIdx !== undefined ? Number(el.dataset.editIdx) : null
+    }, '*');
+  }, true);
+}
+</script>
+</body>
+</html>

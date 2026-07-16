@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Portafolio Arquitectura</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --ink:#1a1814;--cream:#f5f2ed;--warm:#8b7355;--light-warm:#c9b99a;
+      --bg:#f0ebe3;--white:#fff;--border:#e2d9cc;--danger:#c0392b;--success:#27ae60;
+      --sidebar:260px;
+    }
+    body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--ink);display:flex;min-height:100vh;}
+
+    /* SIDEBAR */
+    aside{
+      width:var(--sidebar);min-height:100vh;background:var(--ink);
+      display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;
+    }
+    .sidebar-brand{
+      padding:32px 28px 24px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-brand h1{
+      font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;
+      color:var(--cream);letter-spacing:.08em;
+    }
+    .sidebar-brand p{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--light-warm);margin-top:4px;}
+    nav.side-nav{flex:1;padding:20px 0;}
+    .nav-item{
+      display:flex;align-items:center;gap:12px;
+      padding:13px 28px;font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+      color:rgba(245,242,237,0.55);cursor:pointer;transition:all .2s;border-left:3px solid transparent;
+    }
+    .nav-item:hover{color:var(--cream);background:rgba(255,255,255,0.05);}
+    .nav-item.active{color:var(--cream);background:rgba(255,255,255,0.08);border-left-color:var(--light-warm);}
+    .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+    .sidebar-footer{padding:20px 28px;border-top:1px solid rgba(255,255,255,0.08);}
+    .sidebar-footer a{
+      display:block;text-align:center;padding:10px;border:1px solid rgba(201,185,154,0.4);
+      color:var(--light-warm);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+      text-decoration:none;transition:all .2s;
+    }
+    .sidebar-footer a:hover{background:rgba(201,185,154,0.1);}
+
+    /* MAIN */
+    main{margin-left:var(--sidebar);flex:1;padding:40px 48px;max-width:calc(100% - var(--sidebar));}
+    .page{display:none;}
+    .page.active{display:block;}
+    .page-header{margin-bottom:36px;}
+    .page-header h2{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--ink);}
+    .page-header p{font-size:12px;color:var(--warm);letter-spacing:.1em;margin-top:6px;}
+
+    /* CARDS / PANELS */
+    .panel{background:var(--white);border:1px solid var(--border);padding:28px;margin-bottom:20px;}
+    .panel-highlight{border:1px solid var(--ink);background:linear-gradient(135deg,#faf8f4,#f2ece1);}
+    .panel-title{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--warm);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+
+    /* FORM */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+    .form-row.single{grid-template-columns:1fr;}
+    .form-row.triple{grid-template-columns:1fr 1fr 1fr;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    label{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--warm);}
+    input[type=text],input[type=email],input[type=tel],textarea,select{
+      width:100%;padding:10px 14px;border:1px solid var(--border);background:var(--bg);
+      font-family:'Montserrat',sans-serif;font-size:13px;color:var(--ink);
+      outline:none;transition:border-color .2s;
+    }
+    input:focus,textarea:focus,select:focus{border-color:var(--warm);}
+    textarea{resize:vertical;min-height:80px;}
+
+    /* IMAGE UPLOAD */
+    .img-field{display:flex;flex-direction:column;gap:8px;}
+    .img-preview{
+      width:100%;height:140px;background:var(--bg);border:1px dashed var(--border);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer;
+      transition:border-color .2s;
+    }
+    .img-preview:hover{border-color:var(--warm);}
+    .img-preview img{width:100%;height:100%;object-fit:cover;display:none;}
+    .img-preview .placeholder-txt{font-size:11px;color:var(--light-warm);letter-spacing:.1em;text-align:center;padding:8px;}
+    .img-preview input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;}
+    .btn-primary{background:var(--ink);color:var(--cream);}
+    .btn-primary:hover{background:#2d2820;}
+    .btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger);}
+    .btn-danger:hover{background:var(--danger);color:#fff;}
+    .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--border);}
+    .btn-outline:hover{border-color:var(--ink);}
+    .btn-success{background:var(--success);color:#fff;}
+    .btn-sm{padding:6px 14px;font-size:10px;}
+
+    /* LISTA ITEMS (proyectos, slides, servicios) */
+    .items-list{display:flex;flex-direction:column;gap:8px;}
+    .item-row{
+      display:flex;align-items:center;gap:16px;padding:14px 18px;
+      background:var(--bg);border:1px solid var(--border);transition:border-color .2s;
+    }
+    .item-row:hover{border-color:var(--warm);}
+    .item-thumb{
+      width:56px;height:42px;flex-shrink:0;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .item-thumb img{width:100%;height:100%;object-fit:cover;}
+    .item-thumb .thumb-placeholder{width:100%;height:100%;background:var(--border);}
+    .item-info{flex:1;}
+    .item-info strong{display:block;font-size:13px;font-weight:500;}
+    .item-info span{font-size:11px;color:var(--warm);letter-spacing:.08em;}
+    .item-actions{display:flex;gap:8px;flex-shrink:0;}
+    .drag-handle{cursor:grab;color:var(--border);font-size:18px;flex-shrink:0;user-select:none;}
+    .drag-handle:active{cursor:grabbing;}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(26,24,20,0.7);z-index:500;display:none;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--white);width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:36px;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
+    .modal-header h3{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;}
+    .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--warm);}
+    .modal-footer{display:flex;justify-content:flex-end;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:32px;right:32px;background:var(--ink);color:var(--cream);padding:14px 24px;font-size:12px;letter-spacing:.1em;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateY(0);}
+
+    /* EXPORT */
+    .export-box{background:var(--bg);border:1px solid var(--border);padding:20px;margin-top:16px;}
+    .export-box pre{font-size:11px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;word-break:break-all;color:var(--ink);max-height:300px;overflow-y:auto;}
+
+    /* TOP BAR */
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;}
+    .topbar-actions{display:flex;gap:12px;}
+
+    /* SECCIONES TOGGLE */
+    .section-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
+    .section-toggle-row:last-child{border-bottom:none;}
+    .section-toggle-row strong{display:block;font-size:14px;font-weight:500;}
+    .section-toggle-row span{font-size:12px;color:var(--warm);}
+    .switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;cursor:pointer;}
+    .switch input{opacity:0;width:0;height:0;}
+    .switch .slider{position:absolute;inset:0;background:var(--border);transition:.2s;border-radius:24px;}
+    .switch .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;transition:.2s;border-radius:50%;}
+    .switch input:checked + .slider{background:var(--success);}
+    .switch input:checked + .slider::before{transform:translateX(20px);}
+
+    /* IMG UPLOAD ESTADO */
+    .img-preview.loading .placeholder-txt{color:var(--warm);}
+    .img-preview.loading::after{content:'Optimizando imagen…';position:absolute;inset:0;background:rgba(245,242,237,0.92);display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--warm);}
+    .img-hint{font-size:10px;color:var(--warm);letter-spacing:.04em;}
+    .storage-meter{font-size:11px;color:var(--warm);margin-top:6px;}
+    .storage-meter.warn{color:var(--danger);font-weight:600;}
+
+    .save-error-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:#4a1f1f;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:13px;line-height:1.5;box-shadow:0 2px 12px rgba(0,0,0,.25);}
+    .save-error-banner button{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;}
+
+    /* IMPORTAR: zona de drag & drop */
+    .import-dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;border:2px dashed var(--border);border-radius:10px;padding:36px 20px;cursor:pointer;transition:border-color .2s,background .2s;}
+    .import-dropzone:hover{border-color:var(--ink);}
+    .import-dropzone.dragover{border-color:var(--success);background:rgba(76,175,80,0.06);}
+    .import-dropzone-icon{font-size:28px;}
+    .import-dropzone-hint{font-size:11px;color:var(--warm);}
+
+    /* VISTA PREVIA EN VIVO */
+    .preview-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+    .preview-toolbar button{padding:8px 14px;border:1px solid var(--border);background:var(--white);font-size:12.5px;cursor:pointer;border-radius:3px;transition:background .15s,border-color .15s;}
+    .preview-toolbar button:hover{border-color:var(--ink);}
+    .preview-toolbar button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+    .preview-toolbar-link{font-size:12.5px;color:var(--ink);text-decoration:underline;}
+    .preview-frame-wrap{position:relative;display:flex;justify-content:center;background:#e4e0d8;border:1px solid var(--border);padding:24px;border-radius:4px;}
+    .preview-frame{width:100%;height:78vh;border:1px solid var(--border);background:#fff;transition:width .3s ease;border-radius:2px;}
+    .preview-error{display:flex;align-items:center;justify-content:center;position:absolute;inset:24px;background:rgba(255,255,255,.97);font-size:13.5px;line-height:1.7;color:#444;text-align:center;padding:40px;}
+    .preview-error code{background:#f0ebe3;padding:2px 6px;border-radius:4px;}
+
+    .galeria-item{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--border);margin-bottom:8px;}
+    .galeria-item-thumb{width:56px;height:56px;flex-shrink:0;background:#f0ebe3;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;font-size:10px;color:var(--warm);text-align:center;}
+    .galeria-item-thumb img{width:100%;height:100%;object-fit:cover;}
+    .galeria-item input[type="text"]{flex:1;padding:8px 10px;border:1px solid var(--border);font-size:13px;font-family:inherit;}
+    .galeria-item-actions{display:flex;gap:4px;flex-shrink:0;}
+    .galeria-item-actions button{width:26px;height:26px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-size:12px;}
+    .galeria-item-actions button:disabled{opacity:.3;cursor:default;}
+    .galeria-item-actions button.danger{color:var(--danger);}
+
+    .help-text{font-size:14px;line-height:1.8;color:#444;}
+    .help-text code{background:#f0ebe3;padding:2px 6px;border-radius:4px;font-size:12.5px;}
+    .help-steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:14px;}
+    .help-steps li{font-size:14px;line-height:1.7;color:#444;}
+    .help-steps code{background:#f0ebe3;padding:2px 6px;border-radius:4px;font-size:12.5px;}
+
+    @media(max-width:900px){
+      aside{width:100%;min-height:auto;flex-direction:row;flex-wrap:wrap;position:relative;}
+      main{margin-left:0;padding:24px;}
+      .form-row{grid-template-columns:1fr;}
+      .form-row.triple{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<aside>
+  <div class="sidebar-brand">
+    <h1 id="sbName">Portafolio</h1>
+    <p>Panel de administración</p>
+  </div>
+  <nav class="side-nav">
+    <div class="nav-item" data-page="ayuda"><span class="icon">❓</span> Ayuda</div>
+    <div class="nav-item" data-page="preview"><span class="icon">👁️</span> Vista en vivo</div>
+    <div class="nav-item active" data-page="perfil"><span class="icon">👤</span> Perfil</div>
+    <div class="nav-item" data-page="slides"><span class="icon">🖼</span> Hero Slides</div>
+    <div class="nav-item" data-page="proyectos"><span class="icon">🏛</span> Proyectos</div>
+    <div class="nav-item" data-page="servicios"><span class="icon">⚙️</span> Servicios</div>
+    <div class="nav-item" data-page="contacto"><span class="icon">📬</span> Contacto</div>
+    <div class="nav-item" data-page="secciones"><span class="icon">🧩</span> Secciones</div>
+    <div class="nav-item" data-page="bloques"><span class="icon">🧱</span> Bloques</div>
+    <div class="nav-item" data-page="exportar"><span class="icon">💾</span> Exportar / Importar</div>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="portfolio_arquitectura.html" target="_blank">↗ Ver portafolio</a>
+  </div>
+</aside>
+
+<main>
+
+  <!-- PERFIL -->
+  <!-- AYUDA -->
+  <div class="page" id="page-ayuda">
+    <div class="page-header">
+      <h2>¿Cómo se usa esto?</h2>
+      <p>Guía rápida, sin vueltas, para cargar tu portafolio</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🗂️ Lo primero: qué es cada archivo</div>
+      <p class="help-text">
+        Tenés (o vas a tener) dos archivos: <code>index.html</code> (esto que estás mirando ahora,
+        donde cargás todo) y <code>portfolio_arquitectura.html</code> (la página que ven tus clientes,
+        bonita y sin botones de editar). Cambiás cosas acá, y se reflejan solas ahí.
+        No hace falta ningún programa ni saber programar.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">👁️ Vista en vivo: editar mirando el sitio real</div>
+      <p class="help-text">
+        En vez de ir cambiando campos a ciegas, entrá a <strong>"Vista en vivo"</strong> en el menú:
+        ahí ves tu portafolio real funcionando adentro del panel. Pasá el mouse por encima de un
+        proyecto, un slide, un servicio, tu foto o el bloque de contacto — se marcan con un
+        recuadro y un cartelito "✎ Editar". Hacé clic ahí mismo y se abre el formulario de ese
+        elemento puntual; al guardar, volvés solo a la vista previa ya actualizada. Es la forma
+        más rápida de ir ajustando cómo se ve todo.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">✅ Los pasos, en orden</div>
+      <ol class="help-steps">
+        <li><strong>Entrá a "Perfil"</strong> y escribí tu nombre, tu título (ej: "Arquitecta") y las 3 frases de "Sobre mí". Si tenés una foto tuya, subila ahí (clic en el recuadro gris).</li>
+        <li><strong>Entrá a "Hero Slides"</strong> y cambiá los nombres y las fotos de las 4 imágenes grandes que aparecen primero cuando alguien entra al sitio. Son como la "portada".</li>
+        <li><strong>Entrá a "Proyectos"</strong> y cargá tus obras reales: nombre, categoría (Residencial, Corporativo, etc.), año, y la foto. Podés agregar más proyectos o borrar los que no uses con el botón "+ Nuevo proyecto" y "Eliminar".</li>
+        <li><strong>Entrá a "Servicios"</strong> y escribí qué hacés (ej: "Diseño Arquitectónico", "Dirección de Obra"). Podés agregar, editar o borrar los que quieras.</li>
+        <li><strong>Entrá a "Contacto"</strong> y poné tu email, teléfono y ciudad real, para que la gente te pueda escribir.</li>
+        <li><strong>(Opcional) Entrá a "Secciones"</strong> si querés ocultar algún bloque entero del sitio (por ejemplo, si todavía no tenés servicios cargados, podés apagar esa sección hasta que la completes).</li>
+        <li><strong>(Opcional) Entrá a "Bloques"</strong> si querés agregar contenido extra en cualquier parte del sitio: un cuadro de texto, una imagen destacada con su pie de foto, o una galería con varias imágenes. Elegís dónde va cada uno (por ejemplo, "entre Proyectos y Sobre mí") y los reordenás arrastrándolos.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">💾 ¿Hace falta apretar "Guardar" todo el tiempo?</div>
+      <p class="help-text">
+        Sí, pero es simple: cada ventana (perfil, un slide, un proyecto, etc.) tiene su propio botón
+        "Guardar" abajo. Apretalo cada vez que termines de editar algo, y listo — queda guardado
+        automáticamente en este navegador, no se pierde aunque cierres la pestaña o apagues la compu.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🖼️ ¿Cómo subo fotos?</div>
+      <p class="help-text">
+        Hacé clic en cualquier recuadro gris que diga "Clic para subir imagen" y elegí la foto desde
+        tu compu o celular. No hace falta que la edites antes — el sistema la redimensiona y
+        comprime sola para que el sitio cargue rápido, sin perder calidad visual.
+        Si tu foto es HEIC (típico de iPhone), convertila antes a JPG si da algún error.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🌍 ¿Cómo publico el sitio para que lo vea cualquiera?</div>
+      <p class="help-text">
+        La forma más fácil: andá a "Exportar / Importar" y usá el botón
+        <strong>"⬇ Descargar mi portafolio (archivo único)"</strong>. Te da un solo
+        archivo HTML con todo tu contenido ya adentro — lo abrís con doble
+        clic y ya funciona, sin depender de este panel.
+      </p>
+      <p class="help-text">Si preferís el método clásico (por ejemplo para actualizar un servidor que ya tenías):</p>
+      <ol class="help-steps">
+        <li>Andá a "Exportar / Importar" y descargá el <code>data.json</code> actualizado.</li>
+        <li>Subí ese archivo (reemplazando al viejo) junto con <code>portfolio_arquitectura.html</code> a un hosting o servicio como GitHub Pages, Netlify, o el hosting que uses para tu página. Si no sabés cómo hacer esto, contactá a quien te ayudó a conseguir este sitio, o pedime ayuda de nuevo.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🧯 Algo salió mal / me perdí</div>
+      <ul class="help-steps">
+        <li><strong>¿Se ve raro o no cargan las fotos?</strong> Probá recargar la página (F5) antes de asustarte.</li>
+        <li><strong>¿Querés empezar de cero?</strong> En "Exportar / Importar" hay un botón "↺ Resetear datos" (ojo, esto borra todo lo que cargaste).</li>
+        <li><strong>¿Tenés un respaldo (data.json) de antes?</strong> En "Exportar / Importar" arrastralo a la zona de importar y listo, vuelve todo como estaba.</li>
+        <li><strong>¿Cambiaste de computadora?</strong> Llevate el <code>data.json</code> descargado e importalo en la nueva.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- VISTA PREVIA EN VIVO -->
+  <div class="page" id="page-preview">
+    <div class="page-header">
+      <h2>Vista previa en vivo</h2>
+      <p>Así se ve tu portafolio ahora mismo. Pasá el mouse y hacé clic sobre cualquier elemento marcado para editarlo directamente.</p>
+    </div>
+    <div class="preview-toolbar">
+      <button class="active" onclick="setPreviewWidth('100%', this)">🖥️ Escritorio</button>
+      <button onclick="setPreviewWidth('820px', this)">📱 Tablet</button>
+      <button onclick="setPreviewWidth('390px', this)">📱 Celular</button>
+      <button onclick="refreshPreview()" style="margin-left:auto;">🔄 Actualizar vista</button>
+      <a href="portfolio_arquitectura.html" target="_blank" class="preview-toolbar-link">↗ Abrir en pestaña nueva</a>
+    </div>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame" class="preview-frame" title="Vista previa del portafolio"></iframe>
+      <div class="preview-error" id="previewError" style="display:none;">
+        <div>
+          <strong>No se pudo cargar la vista previa acá dentro.</strong><br>
+          Esto necesita que <code>portfolio_arquitectura.html</code> esté publicado junto a este panel
+          (por ejemplo en GitHub Pages). Si estás probando esto localmente abriendo el archivo con
+          doble clic, usá el botón "↗ Abrir en pestaña nueva" para verlo igual, o el botón
+          "Ver portafolio" del menú.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page active" id="page-perfil">
+    <div class="page-header">
+      <h2>Perfil personal</h2>
+      <p>Información general y sección "Sobre mí"</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Identidad</div>
+      <div class="form-row">
+        <div class="field"><label>Nombre completo</label><input type="text" id="p-nombre" placeholder="Adriana Ferro"></div>
+        <div class="field"><label>Título / Disciplina</label><input type="text" id="p-titulo" placeholder="Arquitectura"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Sobre mí — Textos</div>
+      <div class="form-row single">
+        <div class="field"><label>Párrafo 1</label><textarea id="p-desc1" rows="3"></textarea></div>
+      </div>
+      <div class="form-row single">
+        <div class="field"><label>Párrafo 2</label><textarea id="p-desc2" rows="3"></textarea></div>
+      </div>
+      <div class="form-row single">
+        <div class="field"><label>Párrafo 3</label><textarea id="p-desc3" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Foto de perfil</div>
+      <div class="img-field">
+        <div class="img-preview" id="preview-foto" style="height:200px;">
+          <img id="img-foto" alt="Foto perfil">
+          <div class="placeholder-txt">Clic para subir foto de perfil<br><small>JPG, PNG — se optimiza y comprime automáticamente</small></div>
+          <input type="file" accept="image/*" onchange="handleImg(this,'foto','img-foto','preview-foto','btnSavePerfil')">
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Estadísticas</div>
+      <div id="statsEditor"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="addStat()">+ Agregar estadística</button>
+    </div>
+    <button class="btn btn-primary" id="btnSavePerfil" onclick="savePerfil()">Guardar perfil</button>
+  </div>
+
+  <!-- SLIDES -->
+  <div class="page" id="page-slides">
+    <div class="page-header">
+      <h2>Hero Slides</h2>
+      <p>Imágenes y textos del slideshow principal</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Slides (arrastrá para reordenar)</div>
+      <div class="items-list" id="slidesList"></div>
+    </div>
+    <button class="btn btn-outline" onclick="openSlideModal(null)">+ Nuevo slide</button>
+  </div>
+
+  <!-- PROYECTOS -->
+  <div class="page" id="page-proyectos">
+    <div class="page-header">
+      <h2>Proyectos</h2>
+      <p>Grilla de proyectos del portafolio</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Proyectos (arrastrá para reordenar)</div>
+      <div class="items-list" id="projectsList"></div>
+    </div>
+    <button class="btn btn-outline" onclick="openProjectModal(null)">+ Nuevo proyecto</button>
+  </div>
+
+  <!-- SERVICIOS -->
+  <div class="page" id="page-servicios">
+    <div class="page-header">
+      <h2>Servicios</h2>
+      <p>Listado de servicios profesionales</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Servicios</div>
+      <div class="items-list" id="serviciosList"></div>
+    </div>
+    <button class="btn btn-outline" onclick="openServicioModal(null)">+ Nuevo servicio</button>
+  </div>
+
+  <!-- CONTACTO -->
+  <div class="page" id="page-contacto">
+    <div class="page-header">
+      <h2>Contacto</h2>
+      <p>Datos de contacto visibles en el portafolio</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Información de contacto</div>
+      <div class="form-row single">
+        <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="hola@tunombre.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Teléfono</label><input type="tel" id="c-tel" placeholder="+54 9 11 0000-0000"></div>
+        <div class="field"><label>Ubicación / Estudio</label><input type="text" id="c-ubicacion" placeholder="Buenos Aires, Argentina"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveContacto()">Guardar contacto</button>
+  </div>
+
+  <!-- SECCIONES -->
+  <div class="page" id="page-secciones">
+    <div class="page-header">
+      <h2>Secciones del sitio</h2>
+      <p>Activá o desactivá bloques completos del portafolio sin borrar su contenido</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Visibilidad</div>
+      <div class="section-toggle-row">
+        <div><strong>Hero / Slideshow</strong><span>Portada principal con imágenes grandes</span></div>
+        <label class="switch"><input type="checkbox" id="sec-hero" onchange="toggleSeccion('hero',this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="section-toggle-row">
+        <div><strong>Proyectos</strong><span>Grilla de proyectos destacados</span></div>
+        <label class="switch"><input type="checkbox" id="sec-proyectos" onchange="toggleSeccion('proyectos',this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="section-toggle-row">
+        <div><strong>Sobre mí</strong><span>Texto, foto y estadísticas</span></div>
+        <label class="switch"><input type="checkbox" id="sec-sobre" onchange="toggleSeccion('sobre',this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="section-toggle-row">
+        <div><strong>Servicios</strong><span>Listado de servicios profesionales</span></div>
+        <label class="switch"><input type="checkbox" id="sec-servicios" onchange="toggleSeccion('servicios',this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="section-toggle-row">
+        <div><strong>Contacto</strong><span>Email, teléfono y ubicación + botón final</span></div>
+        <label class="switch"><input type="checkbox" id="sec-contacto" onchange="toggleSeccion('contacto',this.checked)"><span class="slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUES -->
+  <div class="page" id="page-bloques">
+    <div class="page-header">
+      <h2>Bloques personalizados</h2>
+      <p>Agregá cuadros de texto, imágenes o galerías donde quieras del sitio, y reordenalos a tu gusto</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🧱 Tus bloques</div>
+      <p class="help-text" style="margin-bottom:18px;">
+        Cada bloque se ubica en el sitio según la posición que elijas al crearlo (por ejemplo,
+        "entre Proyectos y Sobre mí"). Si ponés varios en el mismo lugar, aparecen en el orden en
+        que los ves en esta lista — arrastralos por el ⠿ para reordenarlos e intercambiarlos.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;">
+        <button class="btn btn-outline btn-sm" onclick="openBloqueModal(null,'texto')">+ Cuadro de texto</button>
+        <button class="btn btn-outline btn-sm" onclick="openBloqueModal(null,'imagen')">+ Imagen destacada</button>
+        <button class="btn btn-outline btn-sm" onclick="openBloqueModal(null,'galeria')">+ Galería de imágenes</button>
+      </div>
+      <div id="bloquesList"></div>
+    </div>
+  </div>
+
+  <!-- EXPORTAR -->
+  <div class="page" id="page-exportar">
+    <div class="page-header">
+      <h2>Exportar / Importar</h2>
+      <p>Hacé un respaldo de tus datos o cargá uno que ya tengas guardado</p>
+    </div>
+
+    <div class="panel panel-highlight">
+      <div class="panel-title">🎁 Descargar mi portafolio listo para usar</div>
+      <p style="font-size:13px;line-height:1.7;margin-bottom:16px;color:#555;">
+        Esto te arma <strong>un solo archivo HTML</strong> con todo lo que cargaste (perfil, proyectos,
+        fotos, servicios y contacto) ya adentro. Lo abrís haciendo doble clic y ya funciona como tu
+        portafolio — no hace falta ningún otro archivo, ni internet, ni volver a este panel.
+        Es ideal para llevártelo, subirlo a tu propio hosting, o simplemente guardarlo.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btnDownloadBundle" onclick="downloadBundledPortfolio()">⬇ Descargar mi portafolio (archivo único)</button>
+      </div>
+      <p class="import-dropzone-hint" style="margin-top:10px;">
+        Nota: esto necesita que <code>portfolio_arquitectura.html</code> esté publicado junto a este panel
+        (por eso funciona una vez que subiste todo a tu hosting o a GitHub Pages). Si estás probando el
+        admin abriendo el archivo con doble clic en tu compu, puede no funcionar por restricciones del navegador.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">📥 Importar datos</div>
+      <p style="font-size:13px;line-height:1.7;margin-bottom:16px;color:#555;">
+        Subí un <code>data.json</code> que hayas descargado antes (desde este mismo panel, en otra
+        computadora, o como respaldo) para reemplazar todo el contenido actual: perfil, slides,
+        proyectos, servicios, contacto e imágenes incluidas.
+      </p>
+      <label class="import-dropzone" id="importDropzone" for="importFileInput">
+        <span class="import-dropzone-icon">📄</span>
+        <span><strong>Hacé clic para elegir un archivo</strong><br>o arrastralo y soltalo acá</span>
+        <span class="import-dropzone-hint">Solo archivos .json exportados desde este panel</span>
+      </label>
+      <input type="file" id="importFileInput" accept=".json,application/json" onchange="importJSON(this)" style="display:none;">
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">📤 Exportar datos (data.json actual)</div>
+      <p style="font-size:13px;line-height:1.7;margin-bottom:16px;color:#555;">
+        Cada cambio que guardás en el admin se guarda en tu navegador (en <strong>IndexedDB</strong>,
+        que a diferencia de localStorage no se llena con unas pocas fotos). Esto funciona
+        localmente, sin servidor, pero solo en <em>este</em> navegador y equipo.<br><br>
+        Para publicar el sitio en la web, descargá el JSON actualizado y reemplazá el
+        <code>data.json</code> en tu servidor (las imágenes van incluidas adentro del JSON).
+        Descargalo también de vez en cuando como respaldo, así podés importarlo si algún día
+        cambiás de computadora o de navegador.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="downloadJSON()">⬇ Descargar data.json</button>
+        <button class="btn btn-outline" onclick="copyJSON()">📋 Copiar al portapapeles</button>
+        <button class="btn btn-outline" id="btnOptimizeAll" onclick="optimizeAllImages()">🗜 Optimizar todas las imágenes</button>
+        <button class="btn btn-danger btn-sm" onclick="resetData()">↺ Resetear datos</button>
+      </div>
+      <div class="storage-meter" id="storageMeter"></div>
+      <div class="export-box" style="margin-top:20px;">
+        <pre id="jsonPreview"></pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL SLIDE -->
+<div class="modal-overlay" id="modalSlide">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="slideModalTitle">Slide</h3>
+      <button class="modal-close" onclick="cancelEditModal('modalSlide')">✕</button>
+    </div>
+    <div class="form-row single">
+      <div class="field"><label>Nombre del proyecto</label><input type="text" id="sl-nombre" placeholder="Casa Umbra"></div>
+    </div>
+    <div class="form-row single">
+      <div class="field"><label>Tipo / Descripción corta</label><input type="text" id="sl-tipo" placeholder="Vivienda Unifamiliar · 2024"></div>
+    </div>
+    <div class="form-row single">
+      <div class="field">
+        <label>Imagen del slide</label>
+        <div class="img-preview" id="preview-slide">
+          <img id="img-slide" alt="">
+          <div class="placeholder-txt">Clic para subir imagen<br><small>JPG, PNG — se optimiza y comprime automáticamente</small></div>
+          <input type="file" accept="image/*" onchange="handleImg(this,'slide','img-slide','preview-slide','btnSaveSlide')">
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="sl-id">
+    <input type="hidden" id="sl-imagen">
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelEditModal('modalSlide')">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveSlide" onclick="saveSlide()">Guardar slide</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROYECTO -->
+<div class="modal-overlay" id="modalProject">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="projModalTitle">Proyecto</h3>
+      <button class="modal-close" onclick="cancelEditModal('modalProject')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Título</label><input type="text" id="pr-titulo" placeholder="Casa Umbra"></div>
+      <div class="field"><label>Categoría</label><input type="text" id="pr-categoria" placeholder="Residencial"></div>
+    </div>
+    <div class="form-row single">
+      <div class="field"><label>Año</label><input type="text" id="pr-anio" placeholder="2024"></div>
+    </div>
+    <div class="form-row single">
+      <div class="field">
+        <label>Imagen del proyecto</label>
+        <div class="img-preview" id="preview-project">
+          <img id="img-project" alt="">
+          <div class="placeholder-txt">Clic para subir imagen<br><small>JPG, PNG — se optimiza y comprime automáticamente</small></div>
+          <input type="file" accept="image/*" onchange="handleImg(this,'project','img-project','preview-project','btnSaveProject')">
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="pr-id">
+    <input type="hidden" id="pr-imagen">
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelEditModal('modalProject')">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveProject" onclick="saveProject()">Guardar proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SERVICIO -->
+<div class="modal-overlay" id="modalServicio">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="srvModalTitle">Servicio</h3>
+      <button class="modal-close" onclick="cancelEditModal('modalServicio')">✕</button>
+    </div>
+    <div class="form-row single">
+      <div class="field"><label>Título del servicio</label><input type="text" id="srv-titulo" placeholder="Diseño Arquitectónico"></div>
+    </div>
+    <div class="form-row single">
+      <div class="field"><label>Descripción</label><textarea id="srv-desc" rows="4" placeholder="Descripción del servicio..."></textarea></div>
+    </div>
+    <input type="hidden" id="srv-id">
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelEditModal('modalServicio')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveServicio()">Guardar servicio</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modalBloque">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="bloqueModalTitle">Bloque</h3>
+      <button class="modal-close" onclick="closeModal('modalBloque')">✕</button>
+    </div>
+
+    <div class="form-row single">
+      <div class="field">
+        <label>¿Dónde va a aparecer en el sitio?</label>
+        <select id="bl-posicion">
+          <option value="inicio">Al principio (antes de Proyectos)</option>
+          <option value="proyectos_sobre">Entre Proyectos y Sobre mí</option>
+          <option value="sobre_servicios">Entre Sobre mí y Servicios</option>
+          <option value="servicios_contacto">Entre Servicios y Contacto</option>
+          <option value="final">Al final (después de Contacto)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row single" data-only-for="texto,imagen,galeria">
+      <div class="field"><label>Título (opcional)</label><input type="text" id="bl-titulo" placeholder="Ej: Proceso de diseño"></div>
+    </div>
+
+    <!-- TEXTO -->
+    <div class="form-row single" data-only-for="texto">
+      <div class="field"><label>Texto</label><textarea id="bl-texto" rows="6" placeholder="Escribí el texto que querés mostrar…"></textarea></div>
+    </div>
+
+    <!-- IMAGEN -->
+    <div data-only-for="imagen">
+      <div class="form-row single">
+        <div class="field">
+          <label>Imagen</label>
+          <div class="img-preview" id="preview-bloque-imagen" onclick="document.getElementById('bl-img-input').click()">
+            <img id="img-bloque-imagen" style="display:none;">
+            <div class="placeholder-txt">Clic para subir imagen<br><small>JPG, PNG — se optimiza y comprime automáticamente</small></div>
+          </div>
+          <input type="file" id="bl-img-input" accept="image/*" style="display:none;" onchange="handleImg(this,'bloqueImagen','img-bloque-imagen','preview-bloque-imagen')">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="field"><label>Pie de foto (opcional)</label><input type="text" id="bl-pie" placeholder="Ej: Fachada norte, hormigón visto"></div>
+      </div>
+    </div>
+
+    <!-- GALERÍA -->
+    <div data-only-for="galeria">
+      <label style="display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warm);margin-bottom:10px;">Imágenes de la galería</label>
+      <div id="galeriaItemsList"></div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="addGaleriaItem()" style="margin-top:6px;">+ Agregar imagen</button>
+      <input type="file" id="bl-galeria-file-input" accept="image/*" style="display:none;" onchange="handleGaleriaImg(this)">
+    </div>
+
+    <input type="hidden" id="bl-id">
+    <input type="hidden" id="bl-tipo">
+    <input type="hidden" id="bl-imagen-actual">
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalBloque')">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveBloque" onclick="saveBloque()">Guardar bloque</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-error-banner" id="saveErrorBanner" style="display:none;">
+  <span>⚠️ No se pudieron guardar los últimos cambios: el navegador se quedó sin espacio de almacenamiento. Descargá el data.json como respaldo desde "Exportar JSON" y probá liberar espacio o usar imágenes más livianas.</span>
+  <button onclick="hideSaveError()">✕</button>
+</div>
+
+<script>
+// storage.js — motor de almacenamiento compartido entre admin.html y portfolio_arquitectura.html
+//
+// Por qué existe este archivo: localStorage tiene un límite real de entre 5 y 10MB
+// por sitio. Un portafolio con varias fotos (aunque estén comprimidas) puede superarlo
+// fácil, y cuando eso pasa, guardar falla — a veces en silencio. IndexedDB no tiene ese
+// techo tan bajo (los navegadores suelen permitir cientos de MB o más), así que acá
+// guardamos ahí. Si por algún motivo IndexedDB no está disponible, se cae de nuevo a
+// localStorage con manejo de errores explícito.
+
+const PORTFOLIO_DB_NAME = 'portfolio_db';
+const PORTFOLIO_DB_STORE = 'kv';
+const PORTFOLIO_DATA_KEY = 'portfolio_data';
+const PORTFOLIO_PING_KEY = 'portfolio_data_ping'; // solo para avisar a otras pestañas que hubo un cambio
+
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error('IndexedDB no disponible en este navegador')); return; }
+    const req = indexedDB.open(PORTFOLIO_DB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(PORTFOLIO_DB_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet(key) {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(PORTFOLIO_DB_STORE, 'readonly');
+    const req = tx.objectStore(PORTFOLIO_DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }));
+}
+
+function idbSet(key, value) {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(PORTFOLIO_DB_STORE, 'readwrite');
+    tx.objectStore(PORTFOLIO_DB_STORE).put(value, key);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+
+// Carga los datos guardados. Devuelve el objeto de datos, o null si nunca se guardó nada.
+async function loadPortfolioData() {
+  try {
+    const fromIdb = await idbGet(PORTFOLIO_DATA_KEY);
+    if (fromIdb) return fromIdb;
+  } catch (e) {
+    console.warn('IndexedDB no disponible, se intentará localStorage', e);
+  }
+
+  // Migración automática: versiones anteriores de este panel guardaban todo
+  // directamente en localStorage. Si hay datos ahí, los pasamos a IndexedDB
+  // y liberamos ese espacio.
+  const legacy = localStorage.getItem(PORTFOLIO_DATA_KEY);
+  if (legacy) {
+    try {
+      const parsed = JSON.parse(legacy);
+      try { await idbSet(PORTFOLIO_DATA_KEY, parsed); localStorage.removeItem(PORTFOLIO_DATA_KEY); }
+      catch (e) { /* si tampoco se puede migrar, al menos devolvemos los datos igual */ }
+      return parsed;
+    } catch (e) { console.error('No se pudo leer el respaldo anterior en localStorage', e); }
+  }
+  return null;
+}
+
+// Guarda los datos. Devuelve { ok: true } o { ok: false, error }.
+async function savePortfolioData(data) {
+  try {
+    await idbSet(PORTFOLIO_DATA_KEY, data);
+    try { localStorage.setItem(PORTFOLIO_PING_KEY, String(Date.now())); } catch (e) { /* no crítico */ }
+    return { ok: true, via: 'indexeddb' };
+  } catch (e) {
+    console.warn('Fallo al guardar en IndexedDB, se intenta localStorage como respaldo', e);
+    try {
+      localStorage.setItem(PORTFOLIO_DATA_KEY, JSON.stringify(data));
+      return { ok: true, via: 'localstorage' };
+    } catch (err) {
+      return { ok: false, error: err };
+    }
+  }
+}
+
+// Tamaño aproximado (en bytes) de los datos actuales, para mostrar un indicador informativo.
+function estimateDataSize(data) {
+  try { return new Blob([JSON.stringify(data)]).size; } catch (e) { return JSON.stringify(data).length; }
+}
+
+// Avisa cuando otra pestaña (admin <-> portafolio, o dos pestañas del admin) guardó cambios.
+function onPortfolioDataChanged(callback) {
+  window.addEventListener('storage', (e) => {
+    if (e.key === PORTFOLIO_PING_KEY || e.key === PORTFOLIO_DATA_KEY) callback();
+  });
+}
+
+</script>
+<script>
+// ── DATA ──
+const DEFAULT_DATA = {
+  perfil:{nombre:"Adriana Ferro",titulo:"Arquitectura",descripcion1:"Estudio la arquitectura como un ejercicio de equilibrio entre el paisaje, la luz y la vida de quienes habitan cada espacio.",descripcion2:"En más de una década de trabajo, cada proyecto partió de escuchar primero: el terreno, el clima, y las costumbres de quien lo va a vivir.",descripcion3:"Hoy dirijo un estudio pequeño que prefiere pocos proyectos bien pensados antes que muchos apurados.",foto:"",stats:[{numero:"47",label:"Proyectos completados"},{numero:"15",label:"Años de experiencia"},{numero:"8",label:"Premios de diseño"},{numero:"3",label:"Países"}]},
+  contacto:{email:"hola@tunombre.com",telefono:"+54 9 11 0000-0000",ubicacion:"Buenos Aires, Argentina"},
+  secciones:{hero:true,proyectos:true,sobre:true,servicios:true,contacto:true},
+  bloques:[],
+  slides:[
+    {id:1,nombre:"Casa Umbra",tipo:"Vivienda Unifamiliar · 2024",imagen:"",gradiente:"linear-gradient(135deg,#2c2820,#6b5a47)"},
+    {id:2,nombre:"Torre Argenta",tipo:"Edificio Corporativo · 2023",imagen:"",gradiente:"linear-gradient(160deg,#1e2428,#3d5060)"},
+    {id:3,nombre:"Pabellón Cristal",tipo:"Arquitectura Efímera · 2023",imagen:"",gradiente:"linear-gradient(120deg,#2a2118,#554330)"},
+    {id:4,nombre:"Conjunto Los Robles",tipo:"Urbanismo · 2022",imagen:"",gradiente:"linear-gradient(145deg,#1a1f1c,#3d5045)"}
+  ],
+  proyectos:[
+    {id:1,titulo:"Casa Umbra",categoria:"Residencial",anio:"2024",imagen:"",gradiente:"linear-gradient(135deg,#3d3528,#5c4f3d)"},
+    {id:2,titulo:"Torre Argenta",categoria:"Corporativo",anio:"2023",imagen:"",gradiente:"linear-gradient(135deg,#1e2d38,#2d4455)"},
+    {id:3,titulo:"Pabellón Cristal",categoria:"Cultural",anio:"2023",imagen:"",gradiente:"linear-gradient(135deg,#2a3320,#3d4d2e)"},
+    {id:4,titulo:"Residencia Altamar",categoria:"Residencial",anio:"2022",imagen:"",gradiente:"linear-gradient(135deg,#38281e,#553d2d)"},
+    {id:5,titulo:"Centro Médico Aurora",categoria:"Salud",anio:"2022",imagen:"",gradiente:"linear-gradient(135deg,#28283a,#3d3d5c)"},
+    {id:6,titulo:"Conjunto Los Robles",categoria:"Urbanismo",anio:"2021",imagen:"",gradiente:"linear-gradient(135deg,#2a2020,#4a3030)"},
+    {id:7,titulo:"Hotel Meridian",categoria:"Hospitalidad",anio:"2021",imagen:"",gradiente:"linear-gradient(135deg,#203028,#2e4538)"}
+  ],
+  servicios:[
+    {id:1,titulo:"Diseño Arquitectónico",descripcion:"Desarrollo integral de proyectos desde el anteproyecto hasta la documentación ejecutiva."},
+    {id:2,titulo:"Dirección de Obra",descripcion:"Seguimiento y control técnico durante la construcción, garantizando calidad y plazos."},
+    {id:3,titulo:"Interiorismo",descripcion:"Diseño de interiores con selección de materialidades y mobiliario integrado."},
+    {id:4,titulo:"Consultoría Urbana",descripcion:"Análisis y planificación de desarrollos urbanos y mixtos."},
+    {id:5,titulo:"Renders & Visualización",descripcion:"Representación fotorrealista y recorridos virtuales de proyectos."},
+    {id:6,titulo:"Arquitectura Sostenible",descripcion:"Diseño bioclimático, certificaciones LEED y EDGE, eficiencia energética."}
+  ]
+};
+
+const STORAGE_KEY = 'portfolio_data';
+let D = {};
+let tmpImgs = {}; // imágenes temporales en edición
+
+function mergeDefaults(d){
+  d.secciones = Object.assign({hero:true,proyectos:true,sobre:true,servicios:true,contacto:true}, d.secciones||{});
+  d.slides = d.slides||[]; d.proyectos = d.proyectos||[]; d.servicios = d.servicios||[];
+  d.perfil = d.perfil||{}; d.perfil.stats = d.perfil.stats||[];
+  d.contacto = d.contacto||{};
+  d.bloques = d.bloques||[];
+  return d;
+}
+
+async function initApp(){
+  const saved = await loadPortfolioData();
+  D = saved ? mergeDefaults(saved) : mergeDefaults(JSON.parse(JSON.stringify(DEFAULT_DATA)));
+  renderAll();
+}
+
+// Guarda usando IndexedDB (sin el techo bajo de localStorage). Si por algún
+// motivo falla también el respaldo en localStorage, se muestra un aviso
+// persistente en pantalla (no solo un alert que se puede ignorar sin querer).
+function save(){
+  savePortfolioData(D).then(res=>{
+    if(res.ok){
+      hideSaveError();
+      toast('Cambios guardados ✓');
+      updateStorageMeter();
+      const previewPage = document.getElementById('page-preview');
+      if(previewPage && previewPage.classList.contains('active')) refreshPreview();
+    } else {
+      console.error('Error al guardar', res.error);
+      showSaveError();
+      updateStorageMeter();
+    }
+  });
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+function showSaveError(){
+  const b=document.getElementById('saveErrorBanner');
+  if(b) b.style.display='flex';
+}
+function hideSaveError(){
+  const b=document.getElementById('saveErrorBanner');
+  if(b) b.style.display='none';
+}
+
+// Tamaño aproximado de los datos actuales — informativo (con IndexedDB ya
+// no hay un límite bajo tipo 5MB, pero sirve para detectar imágenes muy pesadas).
+function updateStorageMeter(){
+  const el = document.getElementById('storageMeter');
+  if(!el) return;
+  const bytes = estimateDataSize(D);
+  const kb = (bytes/1024).toFixed(0);
+  const mb = (bytes/1024/1024).toFixed(1);
+  el.textContent = bytes > 1024*1024
+    ? `Tamaño actual de tus datos: ~${mb} MB`
+    : `Tamaño actual de tus datos: ~${kb} KB`;
+  el.classList.toggle('warn', bytes > 40*1024*1024);
+}
+
+// ── COMPRESIÓN DE IMÁGENES ──
+// Redimensiona y comprime en el navegador antes de guardar como base64,
+// para que las imágenes pesen mucho menos y el sitio cargue más rápido.
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    if(!file.type.startsWith('image/')) { reject(new Error('El archivo no es una imagen')); return; }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('No se pudo procesar la imagen'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round(height * (maxDim/width)); width = maxDim; }
+          else { width = Math.round(width * (maxDim/height)); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── NAV ──
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('page-'+el.dataset.page).classList.add('active');
+    if(el.dataset.page==='exportar') renderJSON();
+    if(el.dataset.page==='secciones') renderSecciones();
+    if(el.dataset.page==='preview') refreshPreview();
+  });
+});
+
+// ── PERFIL ──
+function renderPerfil(){
+  const p=D.perfil;
+  document.getElementById('p-nombre').value=p.nombre||'';
+  document.getElementById('p-titulo').value=p.titulo||'';
+  document.getElementById('p-desc1').value=p.descripcion1||'';
+  document.getElementById('p-desc2').value=p.descripcion2||'';
+  document.getElementById('p-desc3').value=p.descripcion3||'';
+  document.getElementById('sbName').textContent=p.nombre||'Portafolio';
+  if(p.foto){ showImg('img-foto','preview-foto',p.foto); }
+  renderStats();
+}
+function renderStats(){
+  const c=document.getElementById('statsEditor');
+  c.innerHTML='';
+  D.perfil.stats.forEach((s,i)=>{
+    c.innerHTML+=`
+      <div class="form-row" style="margin-bottom:8px;align-items:end;">
+        <div class="field"><label>Número</label><input type="text" value="${s.numero}" oninput="D.perfil.stats[${i}].numero=this.value" style="width:100%"></div>
+        <div class="field"><label>Etiqueta</label><input type="text" value="${s.label}" oninput="D.perfil.stats[${i}].label=this.value" style="width:100%"></div>
+        <button class="btn btn-danger btn-sm" onclick="removeStat(${i})">✕</button>
+      </div>`;
+  });
+}
+function addStat(){ D.perfil.stats.push({numero:'0',label:''}); renderStats(); }
+function removeStat(i){ D.perfil.stats.splice(i,1); renderStats(); }
+function savePerfil(){
+  if(imgStillProcessing()) return;
+  D.perfil.nombre=document.getElementById('p-nombre').value;
+  D.perfil.titulo=document.getElementById('p-titulo').value;
+  D.perfil.descripcion1=document.getElementById('p-desc1').value;
+  D.perfil.descripcion2=document.getElementById('p-desc2').value;
+  D.perfil.descripcion3=document.getElementById('p-desc3').value;
+  if(tmpImgs.foto) D.perfil.foto=tmpImgs.foto;
+  document.getElementById('sbName').textContent=D.perfil.nombre;
+  save();
+  volverAVistaPreviaSiCorresponde();
+}
+
+// ── SLIDES ──
+function renderSlides(){
+  const c=document.getElementById('slidesList');
+  c.innerHTML='';
+  D.slides.forEach((s,i)=>{
+    const bg = s.imagen ? `url('${s.imagen}') center/cover` : s.gradiente;
+    c.innerHTML+=`
+      <div class="item-row" draggable="true" data-type="slide" data-idx="${i}">
+        <span class="drag-handle">⠿</span>
+        <div class="item-thumb"><div class="thumb-placeholder" style="background:${bg}"></div></div>
+        <div class="item-info">
+          <strong>${s.nombre}</strong>
+          <span>${s.tipo}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-outline btn-sm" onclick="openSlideModal(${i})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('slides',${i})">Eliminar</button>
+        </div>
+      </div>`;
+  });
+  initDrag('slidesList','slides');
+}
+function openSlideModal(idx){
+  tmpImgs.slide='';
+  const isNew = idx===null;
+  document.getElementById('slideModalTitle').textContent = isNew ? 'Nuevo slide' : 'Editar slide';
+  const s = isNew ? {id:Date.now(),nombre:'',tipo:'',imagen:'',gradiente:'linear-gradient(135deg,#2c2820,#6b5a47)'} : D.slides[idx];
+  document.getElementById('sl-nombre').value=s.nombre;
+  document.getElementById('sl-tipo').value=s.tipo;
+  document.getElementById('sl-id').value=isNew ? 'new' : idx;
+  document.getElementById('sl-imagen').value=s.imagen||'';
+  clearImg('img-slide','preview-slide');
+  if(s.imagen) showImg('img-slide','preview-slide',s.imagen);
+  openModal('modalSlide');
+}
+function saveSlide(){
+  if(imgStillProcessing()) return;
+  const idx=document.getElementById('sl-id').value;
+  const obj={
+    id: idx==='new' ? Date.now() : D.slides[idx].id,
+    nombre:document.getElementById('sl-nombre').value,
+    tipo:document.getElementById('sl-tipo').value,
+    imagen: tmpImgs.slide || document.getElementById('sl-imagen').value,
+    gradiente: idx==='new' ? 'linear-gradient(135deg,#2c2820,#6b5a47)' : D.slides[idx].gradiente
+  };
+  if(idx==='new') D.slides.push(obj); else D.slides[idx]=obj;
+  save(); closeModal('modalSlide'); renderSlides();
+  volverAVistaPreviaSiCorresponde();
+}
+
+// ── PROYECTOS ──
+function renderProjects(){
+  const c=document.getElementById('projectsList');
+  c.innerHTML='';
+  D.proyectos.forEach((p,i)=>{
+    const bg = p.imagen ? `url('${p.imagen}') center/cover` : p.gradiente;
+    c.innerHTML+=`
+      <div class="item-row" draggable="true" data-type="project" data-idx="${i}">
+        <span class="drag-handle">⠿</span>
+        <div class="item-thumb"><div class="thumb-placeholder" style="background:${bg}"></div></div>
+        <div class="item-info">
+          <strong>${p.titulo}</strong>
+          <span>${p.categoria} · ${p.anio}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-outline btn-sm" onclick="openProjectModal(${i})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('proyectos',${i})">Eliminar</button>
+        </div>
+      </div>`;
+  });
+  initDrag('projectsList','proyectos');
+}
+function openProjectModal(idx){
+  tmpImgs.project='';
+  const isNew=idx===null;
+  document.getElementById('projModalTitle').textContent=isNew?'Nuevo proyecto':'Editar proyecto';
+  const p=isNew?{id:Date.now(),titulo:'',categoria:'',anio:'',imagen:'',gradiente:'linear-gradient(135deg,#3d3528,#5c4f3d)'}:D.proyectos[idx];
+  document.getElementById('pr-titulo').value=p.titulo;
+  document.getElementById('pr-categoria').value=p.categoria;
+  document.getElementById('pr-anio').value=p.anio;
+  document.getElementById('pr-id').value=isNew?'new':idx;
+  document.getElementById('pr-imagen').value=p.imagen||'';
+  clearImg('img-project','preview-project');
+  if(p.imagen) showImg('img-project','preview-project',p.imagen);
+  openModal('modalProject');
+}
+function saveProject(){
+  if(imgStillProcessing()) return;
+  const idx=document.getElementById('pr-id').value;
+  const obj={
+    id:idx==='new'?Date.now():D.proyectos[idx].id,
+    titulo:document.getElementById('pr-titulo').value,
+    categoria:document.getElementById('pr-categoria').value,
+    anio:document.getElementById('pr-anio').value,
+    imagen:tmpImgs.project||document.getElementById('pr-imagen').value,
+    gradiente:idx==='new'?'linear-gradient(135deg,#3d3528,#5c4f3d)':D.proyectos[idx].gradiente
+  };
+  if(idx==='new') D.proyectos.push(obj); else D.proyectos[idx]=obj;
+  save(); closeModal('modalProject'); renderProjects();
+  volverAVistaPreviaSiCorresponde();
+}
+
+// ── SERVICIOS ──
+function renderServicios(){
+  const c=document.getElementById('serviciosList');
+  c.innerHTML='';
+  D.servicios.forEach((s,i)=>{
+    c.innerHTML+=`
+      <div class="item-row" draggable="true" data-type="servicio" data-idx="${i}">
+        <span class="drag-handle">⠿</span>
+        <div class="item-info">
+          <strong>${String(i+1).padStart(2,'0')} — ${s.titulo}</strong>
+          <span>${s.descripcion.substring(0,70)}…</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-outline btn-sm" onclick="openServicioModal(${i})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('servicios',${i})">Eliminar</button>
+        </div>
+      </div>`;
+  });
+  initDrag('serviciosList','servicios');
+}
+function openServicioModal(idx){
+  const isNew=idx===null;
+  document.getElementById('srvModalTitle').textContent=isNew?'Nuevo servicio':'Editar servicio';
+  const s=isNew?{id:Date.now(),titulo:'',descripcion:''}:D.servicios[idx];
+  document.getElementById('srv-titulo').value=s.titulo;
+  document.getElementById('srv-desc').value=s.descripcion;
+  document.getElementById('srv-id').value=isNew?'new':idx;
+  openModal('modalServicio');
+}
+function saveServicio(){
+  const idx=document.getElementById('srv-id').value;
+  const obj={id:idx==='new'?Date.now():D.servicios[idx].id,titulo:document.getElementById('srv-titulo').value,descripcion:document.getElementById('srv-desc').value};
+  if(idx==='new') D.servicios.push(obj); else D.servicios[idx]=obj;
+  save(); closeModal('modalServicio'); renderServicios();
+  volverAVistaPreviaSiCorresponde();
+}
+
+// ── CONTACTO ──
+function renderContacto(){
+  document.getElementById('c-email').value=D.contacto.email||'';
+  document.getElementById('c-tel').value=D.contacto.telefono||'';
+  document.getElementById('c-ubicacion').value=D.contacto.ubicacion||'';
+}
+function saveContacto(){
+  D.contacto.email=document.getElementById('c-email').value;
+  D.contacto.telefono=document.getElementById('c-tel').value;
+  D.contacto.ubicacion=document.getElementById('c-ubicacion').value;
+  save();
+  volverAVistaPreviaSiCorresponde();
+}
+
+// ── SECCIONES (mostrar/ocultar bloques del sitio) ──
+function renderSecciones(){
+  const s = D.secciones || {};
+  ['hero','proyectos','sobre','servicios','contacto'].forEach(key=>{
+    const el = document.getElementById('sec-'+key);
+    if (el) el.checked = s[key] !== false;
+  });
+}
+function toggleSeccion(key, value){
+  D.secciones = D.secciones || {};
+  D.secciones[key] = value;
+  save();
+}
+
+// ── BLOQUES PERSONALIZADOS ──
+const POS_NOMBRES = {
+  inicio:'Al principio', proyectos_sobre:'Entre Proyectos y Sobre mí',
+  sobre_servicios:'Entre Sobre mí y Servicios', servicios_contacto:'Entre Servicios y Contacto',
+  final:'Al final'
+};
+const TIPO_ICONOS = { texto:'📝', imagen:'🖼️', galeria:'🖼️🖼️' };
+const TIPO_NOMBRES = { texto:'Cuadro de texto', imagen:'Imagen destacada', galeria:'Galería de imágenes' };
+
+function renderBloques(){
+  const c=document.getElementById('bloquesList');
+  if(!D.bloques || D.bloques.length===0){
+    c.innerHTML='<p style="font-size:13px;color:#888;">Todavía no agregaste ningún bloque. Usá los botones de arriba para empezar.</p>';
+    return;
+  }
+  c.innerHTML='';
+  D.bloques.forEach((b,i)=>{
+    let label = b.titulo;
+    if(!label) label = b.tipo==='texto' ? (b.texto||'(sin texto)').slice(0,50) : b.tipo==='galeria' ? `Galería (${(b.items||[]).length} foto/s)` : 'Imagen sin título';
+    c.innerHTML+=`
+      <div class="item-row" draggable="true" data-type="bloque" data-idx="${i}">
+        <span class="drag-handle">⠿</span>
+        <div class="item-info">
+          <strong>${TIPO_ICONOS[b.tipo]||''} ${label}</strong>
+          <span>${TIPO_NOMBRES[b.tipo]||b.tipo} · ${POS_NOMBRES[b.posicion]||b.posicion}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-outline btn-sm" onclick="openBloqueModal(${i})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('bloques',${i})">Eliminar</button>
+        </div>
+      </div>`;
+  });
+  initDrag('bloquesList','bloques');
+}
+
+function updateBloqueModalFieldsVisibility(tipo){
+  document.querySelectorAll('#modalBloque [data-only-for]').forEach(el=>{
+    const tipos = el.dataset.onlyFor.split(',');
+    el.style.display = tipos.includes(tipo) ? '' : 'none';
+  });
+}
+
+let tmpGaleriaItems = [];
+
+function openBloqueModal(idx, tipoNuevo){
+  const isNew = idx===null || idx===undefined;
+  const b = isNew
+    ? {id:Date.now(), tipo:tipoNuevo, posicion:'inicio', titulo:'', texto:'', imagen:'', pie:'', items:[]}
+    : D.bloques[idx];
+  document.getElementById('bloqueModalTitle').textContent = (isNew?'Nuevo bloque — ':'Editar bloque — ') + (TIPO_NOMBRES[b.tipo]||'');
+  document.getElementById('bl-id').value = isNew ? 'new' : idx;
+  document.getElementById('bl-tipo').value = b.tipo;
+  document.getElementById('bl-posicion').value = b.posicion || 'inicio';
+  document.getElementById('bl-titulo').value = b.titulo || '';
+  document.getElementById('bl-texto').value = b.texto || '';
+  document.getElementById('bl-pie').value = b.pie || '';
+  document.getElementById('bl-imagen-actual').value = b.imagen || '';
+  tmpImgs.bloqueImagen = '';
+  clearImg('img-bloque-imagen','preview-bloque-imagen');
+  if (b.imagen) showImg('img-bloque-imagen','preview-bloque-imagen', b.imagen);
+  tmpGaleriaItems = isNew ? [] : JSON.parse(JSON.stringify(b.items||[]));
+  renderGaleriaItems();
+  updateBloqueModalFieldsVisibility(b.tipo);
+  openModal('modalBloque');
+}
+
+function saveBloque(){
+  if(imgStillProcessing()) return;
+  const idx = document.getElementById('bl-id').value;
+  const tipo = document.getElementById('bl-tipo').value;
+  const obj = {
+    id: idx==='new' ? Date.now() : D.bloques[idx].id,
+    tipo,
+    posicion: document.getElementById('bl-posicion').value,
+    titulo: document.getElementById('bl-titulo').value,
+    texto: tipo==='texto' ? document.getElementById('bl-texto').value : '',
+    imagen: tipo==='imagen' ? (tmpImgs.bloqueImagen || document.getElementById('bl-imagen-actual').value) : '',
+    pie: tipo==='imagen' ? document.getElementById('bl-pie').value : '',
+    items: tipo==='galeria' ? tmpGaleriaItems : []
+  };
+  if(idx==='new') D.bloques.push(obj); else D.bloques[idx]=obj;
+  save(); closeModal('modalBloque'); renderBloques();
+}
+
+function renderGaleriaItems(){
+  const c = document.getElementById('galeriaItemsList');
+  if (tmpGaleriaItems.length===0){
+    c.innerHTML = '<p style="font-size:12px;color:#888;margin-bottom:10px;">Todavía no hay imágenes en esta galería.</p>';
+    return;
+  }
+  c.innerHTML = tmpGaleriaItems.map((it,i)=>`
+    <div class="galeria-item">
+      <div class="galeria-item-thumb" onclick="triggerGaleriaImgUpload(${i})">
+        ${it.imagen ? `<img src="${it.imagen}">` : `<span>Subir<br>imagen</span>`}
+      </div>
+      <input type="text" value="${(it.pie||'').replace(/"/g,'&quot;')}" oninput="updateGaleriaCaption(${i},this.value)" placeholder="Pie de foto (opcional)">
+      <div class="galeria-item-actions">
+        <button type="button" onclick="moveGaleriaItem(${i},-1)" ${i===0?'disabled':''} title="Subir">↑</button>
+        <button type="button" onclick="moveGaleriaItem(${i},1)" ${i===tmpGaleriaItems.length-1?'disabled':''} title="Bajar">↓</button>
+        <button type="button" class="danger" onclick="removeGaleriaItem(${i})" title="Quitar">✕</button>
+      </div>
+    </div>`).join('');
+}
+function addGaleriaItem(){
+  tmpGaleriaItems.push({id:Date.now()+Math.random(), imagen:'', pie:''});
+  renderGaleriaItems();
+}
+function removeGaleriaItem(i){
+  tmpGaleriaItems.splice(i,1);
+  renderGaleriaItems();
+}
+function moveGaleriaItem(i,dir){
+  const j=i+dir;
+  if(j<0||j>=tmpGaleriaItems.length) return;
+  [tmpGaleriaItems[i],tmpGaleriaItems[j]]=[tmpGaleriaItems[j],tmpGaleriaItems[i]];
+  renderGaleriaItems();
+}
+function updateGaleriaCaption(i,val){ if(tmpGaleriaItems[i]) tmpGaleriaItems[i].pie = val; }
+
+let currentGaleriaEditIdx = null;
+function triggerGaleriaImgUpload(i){
+  currentGaleriaEditIdx = i;
+  document.getElementById('bl-galeria-file-input').click();
+}
+async function handleGaleriaImg(input){
+  const file = input.files[0];
+  if(!file || currentGaleriaEditIdx===null) return;
+  const idx = currentGaleriaEditIdx;
+  try{
+    const dataUrl = await compressImage(file, 1600, 0.9);
+    if(tmpGaleriaItems[idx]) tmpGaleriaItems[idx].imagen = dataUrl;
+    renderGaleriaItems();
+  }catch(e){
+    console.error(e);
+    alert('No se pudo procesar esa imagen. Probá con otro archivo (JPG o PNG).');
+  }finally{
+    input.value='';
+  }
+}
+
+// ── ELIMINAR ──
+function deleteItem(col,idx){
+  if(!confirm('¿Eliminar este elemento?')) return;
+  D[col].splice(idx,1);
+  save();
+  if(col==='slides') renderSlides();
+  if(col==='proyectos') renderProjects();
+  if(col==='servicios') renderServicios();
+  if(col==='bloques') renderBloques();
+}
+
+// ── IMÁGENES ──
+let imgProcessing = 0; // cuántas imágenes se están optimizando ahora mismo
+async function handleImg(input, key, imgId, previewId, saveBtnId){
+  const file=input.files[0];
+  if(!file) return;
+  const preview=document.getElementById(previewId);
+  const saveBtn=saveBtnId ? document.getElementById(saveBtnId) : null;
+  const maxDim = key==='foto' ? 1400 : 2400; // resolución alta: es un portafolio, las imágenes tienen que verse nítidas
+  preview.classList.add('loading');
+  imgProcessing++;
+  let btnOriginalText=null;
+  if(saveBtn){ btnOriginalText=saveBtn.textContent; saveBtn.disabled=true; saveBtn.textContent='Optimizando imagen…'; }
+  try{
+    const dataUrl = await compressImage(file, maxDim, 0.92);
+    tmpImgs[key]=dataUrl;
+    showImg(imgId, previewId, dataUrl);
+  }catch(err){
+    console.error(err);
+    alert('No se pudo procesar esa imagen. Probá con otro archivo (JPG o PNG).');
+  }finally{
+    preview.classList.remove('loading');
+    input.value = ''; // permite volver a elegir el mismo archivo si hace falta
+    imgProcessing--;
+    if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent=btnOriginalText; }
+  }
+}
+
+// Evita que se guarde un formulario mientras una imagen todavía se está optimizando
+// (si el botón ya estaba deshabilitado esto es un respaldo extra, por ejemplo
+// si el usuario dispara el guardado con Enter en vez de clic).
+function imgStillProcessing(){
+  if(imgProcessing > 0){
+    alert('Esperá un segundo: la imagen todavía se está optimizando.');
+    return true;
+  }
+  return false;
+}
+function showImg(imgId, previewId, src){
+  const img=document.getElementById(imgId);
+  const preview=document.getElementById(previewId);
+  img.src=src; img.style.display='block';
+  const ph=preview.querySelector('.placeholder-txt');
+  if(ph) ph.style.display='none';
+}
+function clearImg(imgId, previewId){
+  const img=document.getElementById(imgId);
+  const preview=document.getElementById(previewId);
+  img.src=''; img.style.display='none';
+  const ph=preview.querySelector('.placeholder-txt');
+  if(ph) ph.style.display='';
+}
+
+// ── MODALES ──
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function cancelEditModal(id){ returnToPreviewAfterSave = false; closeModal(id); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+// ── DRAG & DROP REORDER ──
+function initDrag(listId, col){
+  const list=document.getElementById(listId);
+  let dragging=null;
+  list.querySelectorAll('[draggable]').forEach(row=>{
+    row.addEventListener('dragstart',()=>{ dragging=row; row.style.opacity='.4'; });
+    row.addEventListener('dragend',()=>{ dragging.style.opacity='1'; dragging=null; });
+    row.addEventListener('dragover',e=>{ e.preventDefault(); if(dragging&&dragging!==row){ const items=[...list.children]; const from=items.indexOf(dragging); const to=items.indexOf(row); if(from<to) row.after(dragging); else row.before(dragging); }});
+    row.addEventListener('drop',()=>{
+      const newOrder=[...list.querySelectorAll('[data-idx]')].map(r=>parseInt(r.dataset.idx));
+      const reordered=newOrder.map(i=>D[col][i]);
+      D[col]=reordered;
+      save();
+      if(col==='slides') renderSlides();
+      if(col==='proyectos') renderProjects();
+      if(col==='servicios') renderServicios();
+      if(col==='bloques') renderBloques();
+    });
+  });
+}
+
+// ── EXPORT / IMPORT ──
+function renderJSON(){
+  document.getElementById('jsonPreview').textContent=JSON.stringify(D,null,2);
+}
+function downloadJSON(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='data.json'; a.click();
+  toast('data.json descargado ✓');
+}
+
+// Arma un único archivo HTML autocontenido: toma la plantilla pública
+// (portfolio_arquitectura.html, publicada al lado de este admin) y le incrusta
+// los datos actuales, para que quien lo descargue tenga su portafolio andando
+// con solo abrir ese archivo, sin depender de este panel ni de data.json.
+// Trae la plantilla del portafolio público una sola vez y la cachea (se usa
+// tanto para "Descargar mi portafolio" como para la Vista previa en vivo).
+let __portfolioTemplateCache = null;
+async function fetchPortfolioTemplate(){
+  if (__portfolioTemplateCache) return __portfolioTemplateCache;
+  const res = await fetch('portfolio_arquitectura.html');
+  if(!res.ok) throw new Error('No se encontró portfolio_arquitectura.html');
+  __portfolioTemplateCache = await res.text();
+  return __portfolioTemplateCache;
+}
+
+// Inyecta los datos actuales (y, opcionalmente, la bandera de modo edición)
+// dentro del HTML de la plantilla del portafolio.
+function injectDataIntoTemplate(html, data, editMode){
+  const dataBlock = '<script id="embedded-portfolio-data" type="application/json">' + JSON.stringify(data) + '<\/script>\n';
+  let out = html;
+  if (out.includes('<script id="embedded-portfolio-data"')){
+    out = out.replace(/<script id="embedded-portfolio-data"[^>]*>[\s\S]*?<\/script>\s*/, dataBlock);
+  } else if (out.includes('</head>')) {
+    out = out.replace('</head>', dataBlock + '</head>');
+  } else {
+    out = dataBlock + out;
+  }
+  if (editMode && !out.includes('id="admin-preview-flag"')) {
+    const flag = '<script id="admin-preview-flag">window.__ADMIN_PREVIEW__=true;<\/script>\n';
+    out = out.includes('</head>') ? out.replace('</head>', flag + '</head>') : flag + out;
+  }
+  return out;
+}
+
+async function downloadBundledPortfolio(){
+  const btn = document.getElementById('btnDownloadBundle');
+  if(btn){ btn.disabled=true; btn.textContent='Armando tu portafolio…'; }
+  try{
+    const template = await fetchPortfolioTemplate();
+    const html = injectDataIntoTemplate(template, D, false);
+    const blob = new Blob([html], { type:'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const nombreArchivo = (D.perfil.nombre||'mi-portafolio').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // saca tildes
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'mi-portafolio';
+    a.download = `portafolio-${nombreArchivo}.html`;
+    a.click();
+    toast('¡Portafolio descargado ✓ Ya podés abrirlo con doble clic!');
+  }catch(e){
+    console.error(e);
+    alert('No se pudo armar el archivo: necesita que "portfolio_arquitectura.html" esté publicado en el mismo lugar que este panel (por ejemplo en GitHub Pages). Si estás probando esto localmente con doble clic, usá en cambio "Descargar data.json" y reemplazalo junto al archivo del portafolio.');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='⬇ Descargar mi portafolio (archivo único)'; }
+  }
+}
+
+// ── VISTA PREVIA EN VIVO ──
+// Carga el portafolio público real dentro de un iframe, con los datos actuales
+// ya adentro, y en "modo edición": al pasar el mouse se marcan los elementos
+// editables, y al hacer clic se abre directamente el mismo formulario que usarías
+// desde el menú (Perfil, Proyectos, Slides, Servicios o Contacto).
+async function refreshPreview(){
+  const frame = document.getElementById('previewFrame');
+  const err = document.getElementById('previewError');
+  if(!frame) return;
+  try{
+    const template = await fetchPortfolioTemplate();
+    const html = injectDataIntoTemplate(template, D, true);
+    frame.srcdoc = html;
+    if(err) err.style.display='none';
+    frame.style.display='';
+  }catch(e){
+    console.error(e);
+    if(err) err.style.display='flex';
+    frame.style.display='none';
+  }
+}
+function setPreviewWidth(px, btn){
+  const frame = document.getElementById('previewFrame');
+  if(frame) frame.style.width = px;
+  document.querySelectorAll('.preview-toolbar button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+// Escucha los clics hechos DENTRO del iframe (ver el script correspondiente
+// en portfolio_arquitectura.html) y abre el formulario que corresponde.
+let returnToPreviewAfterSave = false;
+window.addEventListener('message', (e)=>{
+  const d = e.data;
+  if(!d || d.source !== 'portfolio-preview') return;
+  returnToPreviewAfterSave = true;
+  const acciones = {
+    proyecto: ()=>{ showPage('proyectos'); openProjectModal(d.idx); },
+    slide:    ()=>{ showPage('slides'); openSlideModal(d.idx); },
+    servicio: ()=>{ showPage('servicios'); openServicioModal(d.idx); },
+    perfil:   ()=>{ showPage('perfil'); },
+    contacto: ()=>{ showPage('contacto'); },
+  };
+  if(acciones[d.type]) acciones[d.type]();
+  else returnToPreviewAfterSave = false;
+});
+
+// Después de guardar algo que se empezó a editar desde un clic en la vista
+// previa, vuelve solo a esa pestaña y refresca para mostrar el cambio.
+function volverAVistaPreviaSiCorresponde(){
+  if(!returnToPreviewAfterSave) return;
+  returnToPreviewAfterSave = false;
+  showPage('preview');
+  refreshPreview();
+}
+
+// Cambia de página igual que si se hubiera clickeado el ítem del menú lateral.
+function showPage(key){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navEl = document.querySelector(`.nav-item[data-page="${key}"]`);
+  if(navEl) navEl.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+key);
+  if(pageEl) pageEl.classList.add('active');
+  if(key==='exportar') renderJSON();
+  if(key==='secciones') renderSecciones();
+}
+
+function copyJSON(){
+  navigator.clipboard.writeText(JSON.stringify(D,null,2)).then(()=>toast('Copiado al portapapeles ✓'));
+}
+function importJSON(input){
+  const file=input.files[0];
+  if(file) importFile(file);
+  input.value=''; // permite volver a elegir el mismo archivo si hace falta
+}
+function importFile(file){
+  if(!file.name.toLowerCase().endsWith('.json') && file.type!=='application/json'){
+    alert('Ese archivo no parece ser un .json. Elegí el data.json que descargaste desde este panel.');
+    return;
+  }
+  if(!confirm('Esto va a reemplazar TODOS los datos actuales (perfil, slides, proyectos, servicios, contacto e imágenes) por los del archivo que elegiste. ¿Continuar?')) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      D=mergeDefaults(JSON.parse(e.target.result));
+      save();
+      renderAll(); renderJSON();
+      toast('Datos importados correctamente ✓');
+    }catch(err){ alert('Ese archivo no es un JSON válido: '+err.message); }
+  };
+  reader.onerror=()=> alert('No se pudo leer el archivo.');
+  reader.readAsText(file);
+}
+function initImportDropzone(){
+  const zone = document.getElementById('importDropzone');
+  if(!zone || zone.dataset.bound) return;
+  zone.dataset.bound='1';
+  ['dragenter','dragover'].forEach(evt=>zone.addEventListener(evt, e=>{
+    e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(evt=>zone.addEventListener(evt, e=>{
+    e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover');
+  }));
+  zone.addEventListener('drop', e=>{
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(file) importFile(file);
+  });
+}
+function resetData(){
+  if(!confirm('¿Resetear TODOS los datos al estado inicial? Esto no se puede deshacer.')) return;
+  D=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  save();
+  renderAll(); toast('Datos reseteados');
+}
+
+// Vuelve a comprimir todas las imágenes que ya están cargadas (útil si vienen
+// de un JSON importado, o si subiste fotos antes de que existiera esta función).
+function compressDataUrl(dataUrl, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    if(!dataUrl){ resolve(dataUrl); return; }
+    const img=new Image();
+    img.onerror=()=>reject(new Error('No se pudo procesar una imagen existente (¿formato no soportado, como HEIC?)'));
+    img.onload=()=>{
+      let {width,height}=img;
+      if(width>maxDim||height>maxDim){
+        if(width>height){height=Math.round(height*(maxDim/width));width=maxDim;}
+        else{width=Math.round(width*(maxDim/height));height=maxDim;}
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=width;canvas.height=height;
+      canvas.getContext('2d').drawImage(img,0,0,width,height);
+      resolve(canvas.toDataURL('image/jpeg',quality));
+    };
+    img.src=dataUrl;
+  });
+}
+async function optimizeAllImages(){
+  if(!confirm('Esto vuelve a optimizar todas las imágenes ya cargadas (foto de perfil, slides, proyectos y bloques) para que ocupen menos espacio y el sitio cargue más rápido. ¿Continuar?')) return;
+  const btn = document.getElementById('btnOptimizeAll');
+  if(btn){ btn.disabled=true; btn.textContent='Optimizando…'; }
+  try{
+    if(D.perfil.foto) D.perfil.foto = await compressDataUrl(D.perfil.foto, 1400, 0.92);
+    for(const s of D.slides) if(s.imagen) s.imagen = await compressDataUrl(s.imagen, 2400, 0.92);
+    for(const p of D.proyectos) if(p.imagen) p.imagen = await compressDataUrl(p.imagen, 2400, 0.92);
+    for(const b of (D.bloques||[])){
+      if(b.tipo==='imagen' && b.imagen) b.imagen = await compressDataUrl(b.imagen, 2400, 0.92);
+      if(b.tipo==='galeria') for(const it of (b.items||[])) if(it.imagen) it.imagen = await compressDataUrl(it.imagen, 1800, 0.9);
+    }
+    save();
+    renderAll(); renderJSON();
+    toast('Imágenes optimizadas ✓');
+  }catch(e){
+    console.error(e);
+    alert('Hubo un problema optimizando alguna imagen. Si tenés fotos en formato HEIC (típico de iPhone), convertilas a JPG antes de subirlas.');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='🗜 Optimizar todas las imágenes'; }
+  }
+}
+
+// ── INIT ──
+function renderAll(){
+  renderPerfil(); renderSlides(); renderProjects(); renderServicios(); renderContacto(); renderSecciones(); renderBloques();
+  updateStorageMeter();
+}
+initImportDropzone();
+initApp();
+</script>
+</body>
+</html>
