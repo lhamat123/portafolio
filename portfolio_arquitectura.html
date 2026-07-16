@@ -191,6 +191,9 @@
       text-transform:uppercase; padding:5px 10px; border-radius:3px; pointer-events:none;
     }
     body.admin-preview-mode .sobre-text:hover::after{ top:0; right:0; }
+    body.admin-preview-mode .draggable-preview{ cursor:grab; }
+    body.admin-preview-mode .draggable-preview:hover::after{ content:'✎ Editar · arrastrá para mover'; }
+    body.admin-preview-mode .draggable-preview.dragging-preview{ opacity:.35; cursor:grabbing; }
 
     /* Reveal al hacer scroll, con stagger opcional vía --rd */
     .reveal{ opacity:0; transform:translateY(46px); transition:opacity .9s cubic-bezier(.16,.84,.44,1) var(--rd,0ms), transform .9s cubic-bezier(.16,.84,.44,1) var(--rd,0ms); }
@@ -661,6 +664,8 @@ function render(d) {
   renderBloques(d);
   initRevealObserver();
   initMagneticOverlays();
+  enableDragReorder('projectsGrid', 'proyecto', 'proyectos');
+  enableDragReorder('serviciosGrid', 'servicio', 'servicios');
 }
 
 // ── BLOQUES PERSONALIZADOS (armados libremente desde el admin) ──
@@ -823,7 +828,11 @@ setTimeout(() => document.getElementById('preloader').classList.add('done'), 400
 // link normal. En el sitio publicado de verdad esto nunca se activa.
 if (window.__ADMIN_PREVIEW__) {
   document.body.classList.add('admin-preview-mode');
+
+  window.__justDraggedPreview = false;
+
   document.addEventListener('click', (e) => {
+    if (window.__justDraggedPreview) return;
     const el = e.target.closest('[data-edit-type]');
     if (!el) return;
     e.preventDefault();
@@ -834,6 +843,44 @@ if (window.__ADMIN_PREVIEW__) {
       idx: el.dataset.editIdx !== undefined ? Number(el.dataset.editIdx) : null
     }, '*');
   }, true);
+}
+
+// Arrastrar y soltar para reordenar proyectos y servicios directamente acá.
+// (Los slides no, porque en el carrusel solo se ve uno a la vez y arrastrar
+// entre ellos sería confuso — esos se reordenan desde "Hero Slides".)
+// Se vuelve a llamar cada vez que se re-renderiza el contenido (ver render()),
+// porque los elementos son nuevos cada vez que cambian los datos.
+function enableDragReorder(containerId, tipo, col){
+  if (!window.__ADMIN_PREVIEW__) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let draggedEl = null;
+  container.querySelectorAll(`[data-edit-type="${tipo}"]`).forEach(el => {
+    el.draggable = true;
+    el.classList.add('draggable-preview');
+    el.addEventListener('dragstart', () => {
+      draggedEl = el;
+      el.classList.add('dragging-preview');
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging-preview');
+      draggedEl = null;
+    });
+    el.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (!draggedEl || draggedEl === el) return;
+      const r = el.getBoundingClientRect();
+      const after = (e.clientY - r.top) > r.height / 2;
+      if (after) el.after(draggedEl); else el.before(draggedEl);
+    });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      window.__justDraggedPreview = true;
+      setTimeout(() => { window.__justDraggedPreview = false; }, 300);
+      const order = [...container.querySelectorAll(`[data-edit-type="${tipo}"]`)].map(n => Number(n.dataset.editIdx));
+      window.parent.postMessage({ source: 'portfolio-preview', type: 'reorder', col, order }, '*');
+    });
+  });
 }
 </script>
 </body>
